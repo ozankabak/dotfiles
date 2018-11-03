@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ ${#} -ne 2 ]; then
+    ME=$(basename $0)
+    echo "Syntax: ${ME} <FILE 1> <FILE 2>"
+    exit -1
+fi
+
+if [ ! -f ${1} ]; then
+   echo "File '${1}' does not exist!"
+   exit -1
+fi
+if [ ! -f ${2} ]; then
+   echo "File '${2}' does not exist!"
+   exit -1
+fi
+
+TMPFILE=$(mktemp $(dirname ${1})/XXXXXX)
+if [ ! -f ${TMPFILE} ]; then
+   echo "Could not create temporary intermediate file!"
+   exit -1
+fi
+
+# Move files, taking into account if mv fails:
+mv ${1} ${TMPFILE} && mv ${2} ${1} && mv ${TMPFILE} ${2}
+

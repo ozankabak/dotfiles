@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if tmux display-message -p '#T' | grep -iq VIM; then
+    tmux send-keys C-${1}
+else
+    tmux select-pane ${2}
+fi
+
