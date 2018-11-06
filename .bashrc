@@ -47,7 +47,17 @@ idempotentAddSingle() {
 # Make my scripts globally accessible:
 idempotentAdd "append" "PATH" "${HOME}/script"
 idempotentAdd "append" "PATH" "/usr/local/sbin"
-idempotentAdd "append" "PATH" "/usr/local/opt/go/libexec/bin"
+if [[ ${OSTYPE} == "darwin"* ]]; then
+    if [ -d /usr/local/opt/go ]; then
+        export GOPATH="${HOME}/golang"
+        export GOROOT="/usr/local/opt/go/libexec"
+        idempotentAdd "append" "PATH" "${GOROOT}/bin"
+        idempotentAdd "append" "PATH" "${GOPATH}/bin"
+    fi
+    if [ -d /usr/local/opt/llvm ]; then
+        idempotentAdd "append" "PATH" "/usr/local/opt/llvm/bin"
+    fi
+fi
 
 # Let there be colors:
 if [[ ${OSTYPE} == "linux-gnu" ]]; then

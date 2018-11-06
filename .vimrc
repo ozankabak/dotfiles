@@ -1,10 +1,21 @@
+" Functions: {{{
+function! s:PaneSwitch(wcmd, system_command)
+    let prev_winnr = winnr()
+    execute "wincmd " . a:wcmd
+    if winnr() == prev_winnr
+        " If we are at the boundary, fall back to 'system_command'.
+        silent call system(a:system_command)
+    endif
+endfunction
+" }}}
+
 " Plugins: {{{
 call plug#begin() " Initialize the Plugin manager.
 Plug 'wincent/terminus' " Play well with TMux, support mouse, change cursor etc.
 Plug 'ntpeters/vim-better-whitespace' " Whitespace highlighting and trimming.
 Plug 'myusuf3/numbers.vim' " Easy switching between relative/absolute line numbers.
 Plug 'tpope/vim-surround' " Easy delimiter (parenthesis etc.) manipulation.
-Plug 'tpope/vim-commentary' " Easy (un)commenting.
+Plug 'tpope/vim-commentary' " Easy comment handling.
 Plug 'flazz/vim-colorschemes' " Color schemes.
 Plug 'sjl/gundo.vim', { 'on' : 'GundoToggle' } " Enhanced undo functionality.
 Plug 'qpkorr/vim-bufkill' " Delete/wipeout buffers without affecting split panes.
@@ -16,38 +27,17 @@ Plug 'vim-airline/vim-airline' " Make status line play well other plugins.
 Plug 'vim-airline/vim-airline-themes' " Status line themes.
 Plug 'ludovicchabant/vim-gutentags' " Automatic tag generation and syntax highlighting.
 Plug 'scrooloose/nerdtree', { 'on' : 'NERDTreeToggle' } " Browse files within VIM.
-Plug 'scrooloose/syntastic' " Syntax checking.
+let g:ale_completion_enabled = 1 " This variable needs to be set before the next line.
+Plug 'w0rp/ale' " Asynchronous syntax checking and auto-completion via LSP servers.
 Plug 'majutsushi/tagbar', { 'on' : 'TagbarToggle' } " Ctags-based object explorer.
-Plug 'Rip-Rip/clang_complete' " C/C++ auto-completion via Clang.
-Plug 'rhysd/vim-clang-format', { 'on' : 'ClangFormat' } " C/C++ auto-formatting.
-Plug 'ervandew/supertab' " Use tab for auto-completion.
 Plug 'Shougo/denite.nvim' " Search files, buffers, content etc.
 Plug 'Shougo/neomru.vim' " Extend search to support MRU files.
-Plug 'davidhalter/jedi-vim' " Python auto-completion via Jedi.
+Plug 'airblade/vim-gitgutter' " Support version control via git.
 Plug 'idanarye/vim-vebugger', { 'on' : 'VBGstartGDB',
                               \ 'branch' : 'develop' } " IDE-like debugging.
 Plug 'ryanoasis/vim-devicons' " Fancy icons!
 Plug 'mhinz/vim-startify' " Change the splash screen to list MRU files, sessions...
 call plug#end() " Launch the specified plugins.
-" }}}
-
-" Functions: {{{
-function! s:IsMac()
-    return has("Unix") && system("uname") == "Darwin\n"
-endfunction
-
-function! s:WriteVariable(var_name,file_name)
-    call writefile(["let " . a:var_name . "='" . eval(a:var_name) . "'"], a:file_name)
-endfunction
-
-function! s:PaneSwitch(wcmd,system_command)
-    let prev_winnr = winnr()
-    execute "wincmd " . a:wcmd
-    if winnr() == prev_winnr
-        " If we are at the boundary, fall back to 'system_command'.
-        call system(a:system_command)
-    endif
-endfunction
 " }}}
 
 " Settings: {{{
@@ -138,51 +128,41 @@ let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:NERDTreeWinSize = s:sidebar_width
 " }}}
 
-" Syntastic: {{{
-let g:syntastic_cpp_checkers = ["clang_check"]
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_loc_list_height = 3
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
-let g:syntastic_cpp_config_file = '~/.syntastic_includes'
-let g:syntastic_mode_map = {'mode':'passive'}
-let g:syntastic_error_symbol = "CE"
-let g:syntastic_warning_symbol = "CW"
-let g:syntastic_style_error_symbol = "SE"
-let g:syntastic_style_warning_symbol = "SW"
+" ALE: {{{
+if executable('clang')
+    let g:ale_linters = { 'cpp' : ['clang'] }
+elseif executable('gcc')
+    let g:ale_linters = { 'cpp' : ['gcc'] }
+endif
+
+if executable('pyls')
+    let g:ale_linters.python = ['pyls']
+endif
+
+if executable('clang-format')
+    let g:ale_fixers = { 'cpp' : ['clang-format'] }
+endif
+
+let g:ale_completion_delay = 25
+let g:ale_completion_max_suggestions = 10
+let g:ale_sign_error = '!E'
+let g:ale_sign_warning = '!W'
+let g:ale_sign_style_error = '?E'
+let g:ale_sign_style_warning = '?W'
+let g:ale_warn_about_trailing_whitespace = 0
+let g:ale_warn_about_trailing_blank_lines = 0
+let g:ale_cpp_clang_options = '-std=c++17 -Wall'
+let g:ale_cpp_gcc_options = '-std=c++17 -Wall'
+let g:ale_c_parse_compile_commands = 1
+let g:ale_c_parse_makefile = 1
+" Use 'tab' key to cycle through completions. Arrow keys also work.
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
 " }}}
 
 " Tagbar: {{{
 let g:tagbar_width = s:sidebar_width
-" }}}
-
-" Clang: {{{
-if s:IsMac()
-    let file_name = $HOME . "/.vim_libclang"
-    if filereadable(file_name)
-        exec "source " . file_name
-    else
-        let libclang_location = system("mdfind -name libclang.dylib")
-        let g:clang_library_path = fnamemodify(libclang_location, ":p:h")
-        call s:WriteVariable("g:clang_library_path", file_name)
-    endif
-endif
-let g:clang_complete_auto = 0
-let g:clang_auto_select = 1
-let g:clang_snippets = 1
-let g:clang_user_options = "-std=c++17"
-" }}}
-
-" Supertab: {{{
-" Make tabs perform user-defined (i.e. clang-based) auto-completion when sensible:
-let g:SuperTabDefaultCompletionType = "context"
-let g:SuperTabContextDefaultCompletionType = "<C-x><C-p>"
-let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
-let g:SuperTabContextDiscoverDiscovery = ["&completefunc:<C-x><C-u>",
-                                         \"&omnifunc:<C-x><C-o>"]
-let g:SuperTabLongestEnhanced = 1
-let g:SuperTabLongestHighlight = 1
 " }}}
 
 " Denite: {{{
@@ -197,13 +177,6 @@ else
                           \'--no-messages'])
 endif
 call denite#custom#source('file, file_rec, line, grep', 'matchers', ['matcher/regexp'])
-" }}}
-
-" Jedi: {{{
-let g:jedi#auto_vim_configuration = 0
-let g:jedi#show_call_signatures = 0
-let g:jedi#popup_on_dot = 0
-let g:jedi#documentation_command = "<leader>K"
 " }}}
 
 " Vebugger: {{{
@@ -234,7 +207,7 @@ noremap K <C-u>
 " Easier beginning/end of line keys:
 noremap H ^
 noremap L $
-if exists('$TMUX')
+if exists('${TMUX}')
     " Make switches between VIM windows and TMux panes seamless:
     noremap <silent> <C-h> :call <SID>PaneSwitch('h', 'tmux select-pane -L')<CR>
     noremap <silent> <C-j> :call <SID>PaneSwitch('j', 'tmux select-pane -D')<CR>
@@ -265,17 +238,14 @@ nnoremap <leader>ls :SLoad<CR>
 nnoremap <leader>ss :SSave!<CR>
 " Shortcut to trigger NERDTree:
 nnoremap <leader><Tab> :NERDTreeToggle<CR>
-" Shortcuts to launch/hide Syntastic's syntax checker:
-nnoremap <leader>sc :SyntasticCheck<CR>
-nnoremap <leader>sr :SyntasticReset<CR>
+" Shortcuts to cycle through linting errors and warnings:
+nmap <silent> <leader>ef <Plug>(ale_previous_wrap)
+nmap <silent> <leader>er <Plug>(ale_next_wrap)
+nmap <silent> <leader>jd <Plug>(ale_go_to_definition)
+nmap <silent> <leader>ff <Plug>(ale_fix)
+nmap <silent> <leader>fl <Plug>(ale_lint)
 " Shortcut to display the tag bar:
 nnoremap <leader>tt :TagbarToggle<CR>
-" Shortcuts to jump to/from C/C++ function definitions:
-let g:clang_jumpto_declaration_key = "<leader>d"
-let g:clang_jumpto_back_key = "<leader>p"
-" Shortcuts to format C/C++ sources via clang-format:
-nnoremap <leader>cf :ClangFormat<CR>
-vnoremap <leader>cf :ClangFormat<CR>
 " Shortcuts to launch Denite (i.e. VIM's Spotlight equivalent):
 nnoremap <leader>dl :Denite line -winheight=10<CR>
 nnoremap <leader>db :Denite buffer -winheright=10<CR>
