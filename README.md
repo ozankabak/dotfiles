@@ -19,12 +19,12 @@ I use a fairly simple iTerm2 profile that re-defines some useful key mappings fr
 
 ### Plug-in Management
 
-I use [`vim-plug`](https://github.com/junegunn/vim-plug) for managing VIM plug-ins. While bootstrapping a fresh installation, one first needs to create the `${HOME}/.vim` directory and then install `vim-plug` via:
+I use [`vim-plug`](https://github.com/junegunn/vim-plug) for managing VIM plug-ins. The `.vimrc` file should take care of bootstrapping `vim-plug` if it isn't there already. However, if you run into issues you can manually set it up via:
 ```
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ```
-Once `vim-plug` is installed, the only remaining step is to launch VIM and issue the command `:PlugUpdate` to fetch and install the actual plug-ins.
+If `vim-plug` is installed manually, you will also need to issue the VIM command `:PlugUpdate` manually to fetch and install the actual plug-ins.
 
 ### Ctags
 
