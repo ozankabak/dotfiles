@@ -11,7 +11,20 @@ brew cask install font-hack-nerd-font
 ```
 Linux users should consult the Nerd Fonts repository for installation details.
 
+## iTerm2 Notes
+
+I use a fairly simple iTerm2 profile that re-defines some useful key mappings from Mac's own _Terminal.app_. It also makes _Hack Regular Nerd Font_ (see above) the default terminal font.
+
 ## VIM Notes
+
+### Plug-in Management
+
+I use [`vim-plug`](https://github.com/junegunn/vim-plug) for managing VIM plug-ins. While bootstrapping a fresh installation, one first needs to create the `${HOME}/.vim` directory and then install `vim-plug` via:
+```
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+```
+Once `vim-plug` is installed, the only remaining step is to launch VIM and issue the command `:PlugUpdate` to fetch and install the actual plug-ins.
 
 ### Ctags
 
