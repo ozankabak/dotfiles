@@ -163,6 +163,8 @@ inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
 
 " Tagbar: {{{
 let g:tagbar_width = s:sidebar_width
+let g:tagbar_map_togglefold = '<Space>'
+let g:tagbar_map_showproto = '<leader>p'
 " }}}
 
 " Denite: {{{
