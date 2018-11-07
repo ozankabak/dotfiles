@@ -10,6 +10,15 @@ endfunction
 " }}}
 
 " Plugins: {{{
+if empty(glob('~/.vim/autoload/plug.vim'))
+    let s:initializing_flag = 1
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall --sync | source ${MYVIMRC}
+else
+    let s:initializing_flag = 0
+endif
+
 call plug#begin() " Initialize the Plugin manager.
 Plug 'wincent/terminus' " Play well with TMux, support mouse, change cursor etc.
 Plug 'ntpeters/vim-better-whitespace' " Whitespace highlighting and trimming.
@@ -41,7 +50,9 @@ call plug#end() " Launch the specified plugins.
 " }}}
 
 " Settings: {{{
-colorscheme badwolf
+if s:initializing_flag == 0
+    colorscheme badwolf
+endif
 syntax enable " Enable syntax highlighting.
 set encoding=utf-8 " Always default to using UTF-8 encoding.
 set tabstop=4 " Number of spaces used to display tabs.
@@ -168,17 +179,20 @@ let g:tagbar_map_showproto = '<leader>p'
 " }}}
 
 " Denite: {{{
-if executable('ag')
-    " Use 'The Silver Searcher', if available.
-    call denite#custom#var('file_rec, grep', 'command',
-                          \['ag', '--nocolor', '--nogroup', '--line-numbers',
-                           \'--silent', '--all-text', '--smart-case'])
-else
-    call denite#custom#var('file_rec, grep', 'command',
-                          \['grep', '-H', '-I', '--ignore-case', '--line-number',
-                          \'--no-messages'])
+if s:initializing_flag == 0
+    if executable('ag')
+        " Use 'The Silver Searcher', if available.
+        call denite#custom#var('file_rec, grep', 'command',
+                              \['ag', '--nocolor', '--nogroup', '--line-numbers',
+                               \'--silent', '--all-text', '--smart-case'])
+    else
+        call denite#custom#var('file_rec, grep', 'command',
+                              \['grep', '-H', '-I', '--ignore-case',
+                              \'--line-number', '--no-messages'])
+    endif
+    call denite#custom#source('file, file_rec, line, grep',
+                             \'matchers', ['matcher/regexp'])
 endif
-call denite#custom#source('file, file_rec, line, grep', 'matchers', ['matcher/regexp'])
 " }}}
 
 " Vebugger: {{{
@@ -254,8 +268,10 @@ nnoremap <leader>db :Denite buffer -winheright=10<CR>
 nnoremap <leader>df :Denite file_rec -winheight=10<CR>
 nnoremap <leader>dm :Denite file_mru -winheight=10<CR>
 " Movement within the Denite window:
-call denite#custom#map('insert', '<Down>', '<denite:move_to_next_line>', 'noremap')
-call denite#custom#map('insert', '<Up>', '<denite:move_to_previous_line>', 'noremap')
+if s:initializing_flag == 0
+    call denite#custom#map('insert', '<Down>', '<denite:move_to_next_line>', 'noremap')
+    call denite#custom#map('insert', '<Up>', '<denite:move_to_previous_line>', 'noremap')
+endif
 " }}}
 
 " Events: {{{

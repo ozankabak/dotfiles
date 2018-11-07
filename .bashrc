@@ -45,7 +45,7 @@ idempotentAddSingle() {
 }
 
 # Make my scripts globally accessible:
-idempotentAdd "append" "PATH" "${HOME}/script"
+idempotentAdd "append" "PATH" "${HOME}/scripts"
 idempotentAdd "append" "PATH" "/usr/local/sbin"
 if [[ ${OSTYPE} == "darwin"* ]]; then
     if [ -d /usr/local/opt/go ]; then
