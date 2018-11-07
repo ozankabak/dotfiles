@@ -70,7 +70,7 @@ alias less="less -R"
 
 # Make sure tmux uses the correct colors. Also, in order to avoid breaking
 # chroots, urge tmux to create its socket under ${HOME}.
-alias tmux="tmux -2 -S ${HOME}/tmp/default"
+alias tmux="mkdir -p ${HOME}/tmp; tmux -2 -S ${HOME}/tmp/default"
 
 # If we are in an interactive session, tie up/down arrow keys to command history.
 if [[ $- =~ i ]]; then
