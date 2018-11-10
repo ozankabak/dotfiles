@@ -185,12 +185,17 @@ if s:initializing_flag == 0
         call denite#custom#var('file_rec, grep', 'command',
                               \['ag', '--nocolor', '--nogroup', '--line-numbers',
                                \'--silent', '--all-text', '--smart-case'])
+        call denite#custom#var('grep', 'default_opts', ['--vimgrep'])
+        call denite#custom#var('grep', 'recursive_opts', [])
+        call denite#custom#var('grep', 'pattern_opt', [])
+        call denite#custom#var('grep', 'separator', ['--'])
+        call denite#custom#var('grep', 'final_opts', [])
     else
         call denite#custom#var('file_rec, grep', 'command',
                               \['grep', '-H', '-I', '--ignore-case',
                               \'--line-number', '--no-messages'])
     endif
-    call denite#custom#source('file, file_rec, line, grep',
+    call denite#custom#source('file, file_rec, line, buffer, grep',
                              \'matchers', ['matcher/regexp'])
 endif
 " }}}
@@ -263,6 +268,7 @@ nmap <silent> <leader>fl <Plug>(ale_lint)
 " Shortcut to display the tag bar:
 nnoremap <leader>tt :TagbarToggle<CR>
 " Shortcuts to launch Denite (i.e. VIM's Spotlight equivalent):
+nnoremap <leader>dg :Denite grep -winheight=10<CR>
 nnoremap <leader>dl :Denite line -winheight=10<CR>
 nnoremap <leader>db :Denite buffer -winheright=10<CR>
 nnoremap <leader>df :Denite file_rec -winheight=10<CR>
@@ -280,6 +286,8 @@ au BufRead,BufNewFile *.ihpp,*.icc,*.icpp set filetype=cpp
 " Strip trailing whitespace after saves:
 au FileType c,cpp,cs,java setlocal commentstring=//\ %s
 au BufWritePre * StripWhitespace
+" Use two-space tabs in YAML files:
+au FileType yaml,yml setlocal tabstop=2 softtabstop=2 shiftwidth=2
 " }}}
 
 " vim:foldmethod=marker:foldlevel=1
