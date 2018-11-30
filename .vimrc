@@ -244,6 +244,9 @@ endif
 " }}}
 
 " Shortcuts: {{{
+" Easier switching between buffers:
+nnoremap <leader>] :bnext<CR>
+nnoremap <leader>[ :bprevious<CR>
 " Switch between relative/absolute line numbers:
 nnoremap <leader>n :NumbersToggle<CR>
 " Easier buffer-deleting without messing up split-panes:
