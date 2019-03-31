@@ -40,8 +40,8 @@ Plug 'scrooloose/nerdtree', { 'on' : 'NERDTreeToggle' } " Browse files within VI
 let g:ale_completion_enabled = 1 " This variable needs to be set before the next line.
 Plug 'w0rp/ale' " Asynchronous syntax checking and auto-completion via LSP servers.
 Plug 'majutsushi/tagbar', { 'on' : 'TagbarToggle' } " Ctags-based object explorer.
-Plug 'Shougo/denite.nvim' " Search files, buffers, content etc.
-Plug 'Shougo/neomru.vim' " Extend search to support MRU files.
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " Fuzzy Finder.
+Plug 'junegunn/fzf.vim' " Search files, buffers, content etc.
 Plug 'airblade/vim-gitgutter' " Support version control via git.
 Plug 'idanarye/vim-vebugger', { 'on' : 'VBGstartGDB',
                               \ 'branch' : 'develop' } " IDE-like debugging.
@@ -173,26 +173,8 @@ let g:tagbar_map_togglefold = '<Space>'
 let g:tagbar_map_showproto = '<leader>p'
 " }}}
 
-" Denite: {{{
-if s:initializing_flag == 0
-    if executable('ag')
-        " Use 'The Silver Searcher', if available.
-        call denite#custom#var('file_rec, grep', 'command',
-                              \['ag', '--nocolor', '--nogroup', '--line-numbers',
-                               \'--silent', '--all-text', '--smart-case'])
-        call denite#custom#var('grep', 'default_opts', ['--vimgrep'])
-        call denite#custom#var('grep', 'recursive_opts', [])
-        call denite#custom#var('grep', 'pattern_opt', [])
-        call denite#custom#var('grep', 'separator', ['--'])
-        call denite#custom#var('grep', 'final_opts', [])
-    else
-        call denite#custom#var('file_rec, grep', 'command',
-                              \['grep', '-H', '-I', '--ignore-case',
-                              \'--line-number', '--no-messages'])
-    endif
-    call denite#custom#source('file, file_rec, line, buffer, grep',
-                             \'matchers', ['matcher/regexp'])
-endif
+" FZF: {{{
+let g:fzf_layout = { 'down': '~20%' }
 " }}}
 
 " Vebugger: {{{
@@ -265,17 +247,6 @@ nmap <silent> <leader>ff <Plug>(ale_fix)
 nmap <silent> <leader>fl <Plug>(ale_lint)
 " Shortcut to display the tag bar:
 nnoremap <leader>tt :TagbarToggle<CR>
-" Shortcuts to launch Denite (i.e. VIM's Spotlight equivalent):
-nnoremap <leader>dg :Denite grep -winheight=10<CR>
-nnoremap <leader>dl :Denite line -winheight=10<CR>
-nnoremap <leader>db :Denite buffer -winheright=10<CR>
-nnoremap <leader>df :Denite file_rec -winheight=10<CR>
-nnoremap <leader>dm :Denite file_mru -winheight=10<CR>
-" Movement within the Denite window:
-if s:initializing_flag == 0
-    call denite#custom#map('insert', '<Down>', '<denite:move_to_next_line>', 'noremap')
-    call denite#custom#map('insert', '<Up>', '<denite:move_to_previous_line>', 'noremap')
-endif
 " }}}
 
 " Events: {{{
