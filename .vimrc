@@ -29,9 +29,10 @@ Plug 'flazz/vim-colorschemes' " Color schemes.
 Plug 'sjl/gundo.vim', { 'on' : 'GundoToggle' } " Enhanced undo functionality.
 Plug 'qpkorr/vim-bufkill' " Delete/wipeout buffers without affecting split panes.
 Plug 'junegunn/vim-easy-align', { 'on' : '<Plug>(EasyAlign)' } " Easy alignment.
-Plug 'Raimondi/delimitMate' " Automatic matching of delimiters, parenthesis etc.
+Plug 'jiangmiao/auto-pairs' " Automatic matching of delimiters, parenthesis etc.
 Plug 'terryma/vim-multiple-cursors' " Support multiple cursors, a la Sublime Text.
-Plug 'nathanaelkane/vim-indent-guides' " Show visual indentation markers.
+Plug 'Yggdroot/indentLine' " Show visual indentation markers.
+Plug 'Vimjas/vim-python-pep8-indent' " Better auto-indent behavior for Python.
 Plug 'vim-airline/vim-airline' " Make status line play well other plugins.
 Plug 'vim-airline/vim-airline-themes' " Status line themes.
 Plug 'ludovicchabant/vim-gutentags' " Automatic tag generation and syntax highlighting.
@@ -54,6 +55,7 @@ if s:initializing_flag == 0
     colorscheme badwolf
 endif
 syntax enable " Enable syntax highlighting.
+set syn=auto " Use automatic mode for syntax highlighting.
 set encoding=utf-8 " Always default to using UTF-8 encoding.
 set tabstop=4 " Number of spaces used to display tabs.
 set expandtab " Substitute spaces for tabs.
@@ -79,7 +81,9 @@ set splitbelow " New horizontally-split panes spawn under the current pane.
 set splitright " New vertically-split panes spawn next to the current pane.
 set clipboard=unnamed " Use system clipboard.
 set hidden " Do not abandon buffers when hidden.
-set completeopt=longest,menuone " Make auto-completion progress one step at a time.
+" Original completion settings:
+" set completeopt=longest,menuone " Make auto-completion progress one step at a time.
+set completeopt=longest,menuone,noselect,noinsert " Completion settings for ale
 set title " Set the terminal title to show useful information.
 set titleold= " Inhibit the useless 'Thanks for flying Vim' title.
 set laststatus=2 " Always display status lines, even for a single (the last) pane.
@@ -113,19 +117,10 @@ xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
 " }}}
 
-" DelimitMate: {{{
-let g:delimitMate_expand_space = 1
-let g:delimitMate_expand_cr = 1
-let g:delimitMate_jump_expansion = 1
+" AutoPairs: {{{
 " }}}
 
 " IndentGuides: {{{
-let g:indent_guides_enable_on_vim_startup = 1
-let g:indent_guides_start_level = 2
-let g:indent_guides_guide_size = 1
-let g:indent_guides_auto_colors = 0
-hi IndentGuidesOdd ctermbg = grey
-hi IndentGuidesEven ctermbg = darkgrey
 " }}}
 
 " Airline: {{{
