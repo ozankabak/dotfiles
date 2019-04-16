@@ -120,7 +120,7 @@ nmap ga <Plug>(EasyAlign)
 " AutoPairs: {{{
 " }}}
 
-" IndentGuides: {{{
+" IndentLine: {{{
 " }}}
 
 " Airline: {{{
@@ -128,6 +128,10 @@ let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_buffers = 1
 let g:airline#extensions#tabline#buffer_nr_show = 1
+" }}}
+
+" Gutentags: {{{
+let g:gutentags_cache_dir = '~/tmp/tags'
 " }}}
 
 " NERDTree: {{{
@@ -143,6 +147,17 @@ endif
 
 if executable('pyls')
     let g:ale_linters.python = ['pyls']
+    let g:ale_python_pyls_config = {
+    \  'pyls': {
+    \    'plugins': {
+    \      'pycodestyle': {
+    \        'enabled': v:true
+    \      },
+    \      'pyflakes': {
+    \        'enabled': v:false
+    \      }
+    \    }
+    \  }}
 endif
 
 if executable('clang-format')
