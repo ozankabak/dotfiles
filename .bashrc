@@ -93,8 +93,12 @@ export MPLBACKEND="module://itermplot"
 export ITERMPLOT=rv
 
 # Various Java tools require this to be set up to work.
-
 if [ -f "/usr/libexec/java_home" ]; then
     export JAVA_HOME=$(/usr/libexec/java_home)
+fi
+
+# Use FZF if it exists:
+if [ -f ~/.fzf.bash ]; then
+    source ~/.fzf.bash
 fi
 

@@ -43,8 +43,6 @@ Plug 'majutsushi/tagbar', { 'on' : 'TagbarToggle' } " Ctags-based object explore
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " Fuzzy Finder.
 Plug 'junegunn/fzf.vim' " Search files, buffers, content etc.
 Plug 'airblade/vim-gitgutter' " Support version control via git.
-Plug 'idanarye/vim-vebugger', { 'on' : 'VBGstartGDB',
-                              \ 'branch' : 'develop' } " IDE-like debugging.
 Plug 'ryanoasis/vim-devicons' " Fancy icons!
 Plug 'mhinz/vim-startify' " Change the splash screen to list MRU files, sessions...
 call plug#end() " Launch the specified plugins.
@@ -121,6 +119,8 @@ nmap ga <Plug>(EasyAlign)
 " }}}
 
 " IndentLine: {{{
+let g:indentLine_char = '┊'
+autocmd Filetype json :IndentLinesDisable
 " }}}
 
 " Airline: {{{
@@ -190,10 +190,6 @@ let g:tagbar_map_showproto = '<leader>p'
 
 " FZF: {{{
 let g:fzf_layout = { 'down': '~20%' }
-" }}}
-
-" Vebugger: {{{
-let g:vebugger_leader = "]"
 " }}}
 
 " Startify: {{{
@@ -268,8 +264,10 @@ nnoremap <leader>tt :TagbarToggle<CR>
 " Recognize C++ include files:
 au BufRead,BufNewFile *.ihpp,*.icc,*.icpp set filetype=cpp
 " Strip trailing whitespace after saves:
-au FileType c,cpp,cs,java setlocal commentstring=//\ %s
 au BufWritePre * StripWhitespace
+" Use preferable commenting tokens:
+au FileType c,cpp,cs,java setlocal commentstring=//\ %s
+au FileType tf setlocal commentstring=#\ %s
 " Use two-space tabs in YAML files:
 au FileType yaml,yml setlocal tabstop=2 softtabstop=2 shiftwidth=2
 " }}}
