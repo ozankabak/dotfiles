@@ -34,9 +34,9 @@ Be aware that macOS does not ship with a [`vim-gutentags`](https://github.com/lu
 
 Out of the box, [`ALE`](https://github.com/w0rp/ale) tries to auto-detect and enable as many tools as it can, so one does not need to do extra configuration. For Python, I recommend [`pyls`](https://github.com/palantir/python-language-server) and my `.vimrc` chooses it as the sole Python tool if the executable `pyls` is in `${PATH}`. As of this writing, I couldn't get [`clangd`](https://clang.llvm.org/extra/clangd.html) to work in `ALE`, so my `.vimrc` defaults to `clang` or `gcc` for linting. Syntax checking does not yet work in C/C++.
 
-### Denite
+### FZF
 
-I use [`denite`](https://github.com/Shougo/denite.nvim) for searching. My set-up tries using [`ag`](https://github.com/ggreer/the_silver_searcher) if it is in `${PATH}`, and defaults to `grep` otherwise. Fellow macOS users can use Homebrew to install `ag` via:
+I generally use [`FZF`](https://github.com/junegunn/fzf.vim) for searching. I also use [`ag`](https://github.com/ggreer/the_silver_searcher), which the FZF plug-in also supports. Fellow macOS users can use Homebrew to install `ag` via:
 ```
 brew install the_silver_searcher
 ```
