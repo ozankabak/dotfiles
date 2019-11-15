@@ -44,7 +44,7 @@ idempotentAddSingle() {
     esac
 }
 
-# Make my scripts globally accessible:
+# Make commonly-used tools globally accessible:
 idempotentAdd "append" "PATH" "${HOME}/scripts"
 idempotentAdd "append" "PATH" "/usr/local/sbin"
 if [[ ${OSTYPE} == "darwin"* ]]; then
