@@ -1,6 +1,9 @@
 # Oh-my-zsh installation path, theme and other settings:
 export ZSH="${HOME}/.oh-my-zsh"
-ZSH_THEME="robbyrussell"
+ZSH_THEME="spaceship"
+SPACESHIP_BATTERY_PREFIX=" "
+SPACESHIP_PROMPT_ADD_NEWLINE="false"
+SPACESHIP_PROMPT_SEPARATE_LINE="false"
 plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
