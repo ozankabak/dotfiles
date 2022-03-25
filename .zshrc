@@ -12,7 +12,7 @@ typeset -U path
 
 # Make commonly-used tools globally accessible:
 path+=${HOME}/scripts
-path+=/usr/local/sbin
+path=(/opt/homebrew/bin $path)
 if [[ ${OSTYPE} == "darwin"* ]]; then
     if [ -d /usr/local/opt/go ]; then
         export GOPATH="${HOME}/golang"

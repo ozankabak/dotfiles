@@ -120,7 +120,9 @@ nmap ga <Plug>(EasyAlign)
 
 " IndentLine: {{{
 let g:indentLine_char = '┊'
-autocmd Filetype json :IndentLinesDisable
+if exists('g:indentLine_loaded')
+    autocmd Filetype json :IndentLinesDisable
+endif
 " }}}
 
 " Airline: {{{
@@ -139,10 +141,10 @@ let g:NERDTreeWinSize = s:sidebar_width
 " }}}
 
 " ALE: {{{
-if executable('clang')
-    let g:ale_linters = { 'cpp' : ['clang'] }
-elseif executable('gcc')
-    let g:ale_linters = { 'cpp' : ['gcc'] }
+if executable('gcc-11')
+    let g:ale_linters = { 'cpp' : ['gcc-11'], 'mpp': ['gcc-11'] }
+elseif executable('clang')
+    let g:ale_linters = { 'cpp' : ['clang'], 'mpp' : ['clang'] }
 endif
 
 if executable('pyls')
@@ -161,7 +163,7 @@ if executable('pyls')
 endif
 
 if executable('clang-format')
-    let g:ale_fixers = { 'cpp' : ['clang-format'] }
+    let g:ale_fixers = { 'cpp' : ['clang-format'], 'mpp': ['clang-format'] }
 endif
 
 let g:ale_completion_delay = 25
@@ -172,8 +174,8 @@ let g:ale_sign_style_error = '?E'
 let g:ale_sign_style_warning = '?W'
 let g:ale_warn_about_trailing_whitespace = 0
 let g:ale_warn_about_trailing_blank_lines = 0
-let g:ale_cpp_clang_options = '-std=c++17 -Wall'
-let g:ale_cpp_gcc_options = '-std=c++17 -Wall'
+let g:ale_cpp_clang_options = '-std=c++23 -Wall'
+let g:ale_cpp_gcc_options = '-std=c++23 -Wall'
 let g:ale_c_parse_compile_commands = 1
 let g:ale_c_parse_makefile = 1
 " Use 'tab' key to cycle through completions. Arrow keys also work.
@@ -262,7 +264,7 @@ nnoremap <leader>tt :TagbarToggle<CR>
 
 " Events: {{{
 " Recognize C++ include files:
-au BufRead,BufNewFile *.ihpp,*.icc,*.icpp set filetype=cpp
+au BufRead,BufNewFile *.ihpp,*.icc,*.icpp,*.mpp set filetype=cpp
 " Strip trailing whitespace after saves:
 au BufWritePre * StripWhitespace
 " Use preferable commenting tokens:
