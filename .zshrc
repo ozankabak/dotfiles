@@ -31,6 +31,9 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
     fi
 fi
 
+# Use the "lsd" utility instead of the default one:
+alias ls=lsd
+
 # Make sure tmux uses the correct colors. Also, in order to avoid breaking
 # chroots, urge tmux to create its socket under ${HOME}.
 alias tmux="mkdir -p ${HOME}/tmp; tmux -2 -S ${HOME}/tmp/default"

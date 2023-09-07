@@ -15,6 +15,13 @@ Linux users should consult the Nerd Fonts repository for installation details.
 
 I use a fairly simple iTerm2 profile that re-defines some useful key mappings from Mac's own _Terminal.app_. It also makes _Hack Regular Nerd Font_ (see above) the default terminal font.
 
+## Common Terminal Utilities
+
+I use the `lsd` utility instead of the default one. For macOS users, installation via Homebrew is as follows:
+```
+brew install lsd
+```
+
 ## VIM Notes
 
 ### Plug-in Management
