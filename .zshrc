@@ -13,6 +13,12 @@ typeset -U path
 # Make commonly-used tools globally accessible:
 path+=${HOME}/scripts
 path=(/opt/homebrew/bin $path)
+
+# Add Rust package executables to PATH:
+if [[ -d ${HOME}/.cargo/bin ]]; then
+    path+=${HOME}/.cargo/bin
+fi
+# Add Go package executables to PATH:
 if [[ ${OSTYPE} == "darwin"* ]]; then
     if [ -d /usr/local/opt/go ]; then
         export GOPATH="${HOME}/golang"
@@ -44,6 +50,11 @@ export ITERMPLOT=rv
 # Various Java tools require this to be set up to work.
 if [ -f "/usr/libexec/java_home" ]; then
     export JAVA_HOME=$(/usr/libexec/java_home)
+fi
+
+# Load xmake profile:
+if [ -s ~/.xmake/profile ]; then
+    source ~/.xmake/profile
 fi
 
 # Use FZF if it exists:
