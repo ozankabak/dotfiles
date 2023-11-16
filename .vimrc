@@ -120,9 +120,8 @@ nmap ga <Plug>(EasyAlign)
 
 " IndentLine: {{{
 let g:indentLine_char = '┊'
-if exists('g:indentLine_loaded')
-    autocmd Filetype json :IndentLinesDisable
-endif
+let g:vim_json_conceal = 0
+let g:markdown_syntax_conceal = 0
 " }}}
 
 " Airline: {{{
