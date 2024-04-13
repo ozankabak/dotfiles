@@ -65,3 +65,6 @@ if [ -f ~/.fzf.zsh ]; then
     source ~/.fzf.zsh
 fi
 
+# Activate my Python environment:
+source ~/pyenv/bin/activate
+
