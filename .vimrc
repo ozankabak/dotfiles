@@ -45,6 +45,7 @@ Plug 'junegunn/fzf.vim' " Search files, buffers, content etc.
 Plug 'airblade/vim-gitgutter' " Support version control via git.
 Plug 'ryanoasis/vim-devicons' " Fancy icons!
 Plug 'mhinz/vim-startify' " Change the splash screen to list MRU files, sessions...
+Plug 'github/copilot.vim' " GitHub Copilot assistant.
 call plug#end() " Launch the specified plugins.
 " }}}
 
