@@ -7,12 +7,12 @@ idempotentAdd() {
     # $3 ... $N = Directories to be added.
 
     # If we don't have all the arguments we need or mode is unrecognized, return:
-    if [ ${#} -le 2 ] || ! [[ ${1} == "append" || ${1} == "prepend" ]]; then
+    if [[ ${#} -le 2 ]] || ! [[ ${1} == "append" || ${1} == "prepend" ]]; then
         return -1
     fi
 
     # If the given PATH-type variable is empty, we will create it:
-    if [ -z ${!2} ]; then
+    if [[ -z ${!2} ]]; then
         # Concatenate all arguments with colons, write to the output variable:
         printf -v ${2} ":%s" ${@:3}
         # Remove the spurious first colon.
@@ -46,27 +46,49 @@ idempotentAddSingle() {
 
 # Make commonly-used tools globally accessible:
 idempotentAdd "append" "PATH" "${HOME}/scripts"
-idempotentAdd "append" "PATH" "/usr/local/sbin"
+
+# Add Rust package executables to PATH:
+if [[ -d ${HOME}/.cargo/bin ]]; then
+    idempotentAdd "append" "PATH" "${HOME}/.cargo/bin"
+fi
+
+# Perform MacOS-specific actions:
 if [[ ${OSTYPE} == "darwin"* ]]; then
-    if [ -d /usr/local/opt/go ]; then
+    # We don't want Homebrew talking to Google Analytics.
+    export HOMEBREW_NO_ANALYTICS=1
+    # Add Homebrew executables to PATH:
+    idempotentAdd "prepend" "PATH" "/opt/homebrew/bin"
+    idempotentAdd "prepend" "PATH" "/opt/homebrew/sbin"
+    # Add Go package executables to PATH:
+    if [ -d /opt/homebrew/opt/go ]; then
         export GOPATH="${HOME}/golang"
-        export GOROOT="/usr/local/opt/go/libexec"
+        export GOROOT="/opt/homebrew/opt/go/libexec"
         idempotentAdd "append" "PATH" "${GOROOT}/bin"
         idempotentAdd "append" "PATH" "${GOPATH}/bin"
     fi
-    if [ -d /usr/local/opt/llvm ]; then
-        idempotentAdd "append" "PATH" "/usr/local/opt/llvm/bin"
+    # Add LLVM executables to PATH:
+    if [ -d /opt/homebrew/opt/llvm ]; then
+        idempotentAdd "append" "PATH" "/opt/homebrew/opt/llvm/bin"
     fi
+    # # Enable iTerm2 back-end for Matplotlib.
+    # export MPLBACKEND="module://itermplot"
+    # # Reverse Matplotlib colors to accomodate my terminal's dark background.
+    # export ITERMPLOT=rv
 fi
 
-# Let there be colors:
-if [[ ${OSTYPE} == "linux-gnu" ]]; then
+# Use the "lsd" utility, if available, instead of the default one:
+if type lsd > /dev/null 2>&1; then
+    alias ls=lsd
+# Otherwise, use the color option of "ls":
+elif [[ ${OSTYPE} == "linux-gnu" ]]; then
     alias ls="ls --color=always"
 elif [[ ${OSTYPE} == "darwin"* ]]; then
     alias ls="ls -G"
 fi
-alias grep="grep --color=always"
-alias less="less -R"
+
+# Use the color option of "grep" and "less":
+# alias grep="grep --color=always"
+# alias less="less -R"
 
 # Make sure tmux uses the correct colors. Also, in order to avoid breaking
 # chroots, urge tmux to create its socket under ${HOME}.
@@ -84,21 +106,21 @@ fi
 export VISUAL=vim
 export EDITOR=vim
 
-# We don't want Homebrew talking to Google Analytics.
-export HOMEBREW_NO_ANALYTICS=1
-
-# Enable iTerm2 back-end for Matplotlib.
-export MPLBACKEND="module://itermplot"
-# Reverse Matplotlib colors to accomodate my terminal's dark background.
-export ITERMPLOT=rv
-
 # Various Java tools require this to be set up to work.
 if [ -f "/usr/libexec/java_home" ]; then
     export JAVA_HOME=$(/usr/libexec/java_home)
+fi
+
+# Load xmake profile:
+if [ -s ~/.xmake/profile ]; then
+    source ~/.xmake/profile
 fi
 
 # Use FZF if it exists:
 if [ -f ~/.fzf.bash ]; then
     source ~/.fzf.bash
 fi
+
+# Activate my Python environment:
+source ~/pyenv/bin/activate
 

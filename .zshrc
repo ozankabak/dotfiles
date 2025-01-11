@@ -12,27 +12,49 @@ typeset -U path
 
 # Make commonly-used tools globally accessible:
 path+=${HOME}/scripts
-path=(/opt/homebrew/bin $path)
 
 # Add Rust package executables to PATH:
 if [[ -d ${HOME}/.cargo/bin ]]; then
     path+=${HOME}/.cargo/bin
 fi
-# Add Go package executables to PATH:
+
+# Perform MacOS-specific actions:
 if [[ ${OSTYPE} == "darwin"* ]]; then
-    if [ -d /usr/local/opt/go ]; then
+    # We don't want Homebrew talking to Google Analytics.
+    export HOMEBREW_NO_ANALYTICS=1
+    # Add Homebrew executables to PATH:
+    path=(/opt/homebrew/bin $path)
+    path=(/opt/homebrew/sbin $path)
+    # Add Go package executables to PATH:
+    if [ -d /opt/homebrew/opt/go ]; then
         export GOPATH="${HOME}/golang"
-        export GOROOT="/usr/local/opt/go/libexec"
+        export GOROOT="/opt/homebrew/opt/go/libexec"
         path+=${GOROOT}/bin
         path+=${GOPATH}/bin
     fi
-    if [ -d /usr/local/opt/llvm ]; then
-        path+=/usr/local/opt/llvm/bin
+    # Add LLVM executables to PATH:
+    if [ -d /opt/homebrew/opt/llvm ]; then
+        path+=/opt/homebrew/opt/llvm/bin
     fi
+    # # Enable iTerm2 back-end for Matplotlib.
+    # export MPLBACKEND="module://itermplot"
+    # # Reverse Matplotlib colors to accomodate my terminal's dark background.
+    # export ITERMPLOT=rv
 fi
 
-# Use the "lsd" utility instead of the default one:
-alias ls=lsd
+# Use the "lsd" utility, if it exists, instead of the default one:
+if type lsd > /dev/null 2>&1; then
+    alias ls=lsd
+# Otherwise, use the color option of "ls":
+elif [[ ${OSTYPE} == "linux-gnu" ]]; then
+    alias ls="ls --color=always"
+elif [[ ${OSTYPE} == "darwin"* ]]; then
+    alias ls="ls -G"
+fi
+
+# Use the color option of "grep" and "less":
+# alias grep="grep --color=always"
+# alias less="less -R"
 
 # Make sure tmux uses the correct colors. Also, in order to avoid breaking
 # chroots, urge tmux to create its socket under ${HOME}.
@@ -41,14 +63,6 @@ alias tmux="mkdir -p ${HOME}/tmp; tmux -2 -S ${HOME}/tmp/default"
 # Make sure we use VIM as the default editor.
 export VISUAL=vim
 export EDITOR=vim
-
-# We don't want Homebrew talking to Google Analytics.
-export HOMEBREW_NO_ANALYTICS=1
-
-# Enable iTerm2 back-end for Matplotlib.
-export MPLBACKEND="module://itermplot"
-# Reverse Matplotlib colors to accomodate my terminal's dark background.
-export ITERMPLOT=rv
 
 # Various Java tools require this to be set up to work.
 if [ -f "/usr/libexec/java_home" ]; then
