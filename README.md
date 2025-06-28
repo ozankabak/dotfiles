@@ -22,6 +22,17 @@ I use the `lsd` utility instead of the default one. For macOS users, installatio
 brew install lsd
 ```
 
+## Python
+
+I use a virtual environment, `pyenv`, to manage Python versions and packages and avoid cluttering system Python installations. To set up the virtual environment, use
+```
+python -m venv ~/pyenv
+```
+Do not forget to upgrade the virtual environment after upgrading Python:
+```
+python -m venv --upgrade ~/pyenv
+```
+
 ## VIM Notes
 
 ### Plug-in Management
