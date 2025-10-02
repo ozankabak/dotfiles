@@ -36,10 +36,6 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
     if [ -d /opt/homebrew/opt/llvm ]; then
         path+=/opt/homebrew/opt/llvm/bin
     fi
-    # # Enable iTerm2 back-end for Matplotlib.
-    # export MPLBACKEND="module://itermplot"
-    # # Reverse Matplotlib colors to accomodate my terminal's dark background.
-    # export ITERMPLOT=rv
 fi
 
 # Use the "lsd" utility, if it exists, instead of the default one:
