@@ -1,0 +1,449 @@
+{
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+  "alwaysThinkingEnabled": true,
+  "includeCoAuthoredBy": false,
+  "sandbox": {
+    "enabled": false
+  },
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Read(/tmp/**)",
+      "Write(./**)",
+      "Write(/tmp/**)",
+      "Edit(./**)",
+      "Edit(/tmp/**)",
+      "WebFetch",
+      "WebSearch",
+
+      "Bash(pwd)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(tree:*)",
+
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(tac:*)",
+
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(rmdir:*)",
+      "Bash(touch:*)",
+      "Bash(ln:*)",
+
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(wc:*)",
+      "Bash(du:*)",
+      "Bash(df:*)",
+      "Bash(realpath:*)",
+      "Bash(readlink:*)",
+      "Bash(basename:*)",
+      "Bash(dirname:*)",
+
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(shuf:*)",
+      "Bash(cut:*)",
+      "Bash(tr:*)",
+      "Bash(paste:*)",
+      "Bash(join:*)",
+      "Bash(comm:*)",
+      "Bash(split:*)",
+      "Bash(csplit:*)",
+      "Bash(fmt:*)",
+      "Bash(fold:*)",
+      "Bash(column:*)",
+      "Bash(rev:*)",
+      "Bash(tee:*)",
+      "Bash(xargs:*)",
+
+      "Bash(diff:*)",
+      "Bash(cmp:*)",
+
+      "Bash(md5sum:*)",
+      "Bash(sha1sum:*)",
+      "Bash(sha256sum:*)",
+      "Bash(shasum:*)",
+      "Bash(cksum:*)",
+      "Bash(b2sum:*)",
+
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+
+      "Bash(whoami)",
+      "Bash(id:*)",
+      "Bash(hostname:*)",
+      "Bash(uname:*)",
+      "Bash(date:*)",
+      "Bash(cal:*)",
+      "Bash(uptime:*)",
+
+      "Bash(which:*)",
+      "Bash(whereis:*)",
+      "Bash(type:*)",
+      "Bash(man -P cat:*)",
+      "Bash(apropos:*)",
+
+      "Bash(source:*)",
+      "Bash(test:*)",
+      "Bash([:*)",
+      "Bash(true)",
+      "Bash(false)",
+      "Bash(sleep:*)",
+      "Bash(seq:*)",
+      "Bash(expr:*)",
+
+      "Bash(grep:*)",
+      "Bash(egrep:*)",
+      "Bash(fgrep:*)",
+      "Bash(rg:*)",
+      "Bash(ag:*)",
+      "Bash(ast-grep:*)",
+
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(gawk:*)",
+
+      "Bash(find:*)",
+      "Bash(fd:*)",
+      "Bash(locate:*)",
+
+
+      "Bash(jq:*)",
+      "Bash(yq:*)",
+      "Bash(xq:*)",
+
+      "Bash(iconv:*)",
+      "Bash(dos2unix:*)",
+      "Bash(unix2dos:*)",
+
+      "Bash(expand:*)",
+      "Bash(unexpand:*)",
+      "Bash(nl:*)",
+      "Bash(pr:*)",
+
+      "Bash(strings:*)",
+      "Bash(od:*)",
+      "Bash(xxd:*)",
+      "Bash(hexdump:*)",
+      "Bash(base64:*)",
+
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git blame:*)",
+      "Bash(git shortlog:*)",
+      "Bash(git describe:*)",
+      "Bash(git branch:*)",
+      "Bash(git tag:*)",
+      "Bash(git remote:*)",
+      "Bash(git stash list:*)",
+      "Bash(git stash show:*)",
+      "Bash(git config --get:*)",
+      "Bash(git config --list:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git cat-file:*)",
+      "Bash(git reflog:*)",
+      "Bash(git worktree:*)",
+      "Bash(git help:*)",
+      "Bash(git --version)",
+      "Bash(git version)",
+
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git restore:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(git merge:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git revert:*)",
+      "Bash(git stash:*)",
+      "Bash(git clean:*)",
+      "Bash(git rm:*)",
+      "Bash(git mv:*)",
+      "Bash(git bisect:*)",
+      "Bash(git grep:*)",
+
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git clone:*)",
+      "Bash(git submodule update:*)",
+      "Bash(git lfs pull:*)",
+      "Bash(git lfs fetch:*)",
+
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr status:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+
+      "Bash(gh pr create:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr comment:*)",
+
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue status:*)",
+
+      "Bash(gh issue create:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue comment:*)",
+
+      "Bash(gh repo view:*)",
+      "Bash(gh repo list:*)",
+      "Bash(gh repo clone:*)",
+
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run watch:*)",
+
+      "Bash(gh release view:*)",
+      "Bash(gh release list:*)",
+
+      "Bash(gh gist view:*)",
+      "Bash(gh gist list:*)",
+
+      "Bash(gh search repos:*)",
+      "Bash(gh search issues:*)",
+      "Bash(gh search prs:*)",
+      "Bash(gh search code:*)",
+      "Bash(gh search commits:*)",
+
+      "Bash(gh project view:*)",
+      "Bash(gh project list:*)",
+
+      "Bash(gh label list:*)",
+
+      "Bash(gh auth status:*)",
+
+      "Bash(gh config get:*)",
+      "Bash(gh config list:*)",
+
+      "Bash(gh api:*)",
+
+      "Bash(gh status)",
+
+      "Bash(gh --version)",
+      "Bash(gh help:*)",
+
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(bun:*)",
+      "Bash(deno:*)",
+
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
+      "Bash(uv:*)",
+      "Bash(pipx:*)",
+      "Bash(poetry:*)",
+      "Bash(pdm:*)",
+      "Bash(pytest:*)",
+      "Bash(mypy:*)",
+      "Bash(ruff:*)",
+      "Bash(black:*)",
+      "Bash(isort:*)",
+
+      "Bash(cargo:*)",
+      "Bash(rustc:*)",
+      "Bash(rustup:*)",
+
+      "Bash(go:*)",
+
+      "Bash(make:*)",
+      "Bash(cmake:*)",
+      "Bash(ninja:*)",
+      "Bash(xmake:*)",
+      "Bash(gcc:*)",
+      "Bash(g++:*)",
+      "Bash(clang:*)",
+      "Bash(clang++:*)",
+      "Bash(cc:*)",
+      "Bash(ld:*)",
+      "Bash(ar:*)",
+      "Bash(nm:*)",
+      "Bash(objdump:*)",
+      "Bash(readelf:*)",
+      "Bash(strip:*)",
+      "Bash(otool:*)",
+
+      "Bash(prettier:*)",
+      "Bash(eslint:*)",
+      "Bash(shellcheck:*)",
+      "Bash(shfmt:*)",
+
+      "Bash(ping:*)",
+      "Bash(dig:*)",
+      "Bash(nslookup:*)",
+      "Bash(host:*)",
+      "Bash(traceroute:*)",
+      "Bash(tracepath:*)",
+      "Bash(mtr -r:*)",
+      "Bash(mtr --report:*)",
+      "Bash(netstat:*)",
+      "Bash(ss:*)",
+      "Bash(lsof:*)",
+      "Bash(ifconfig:*)",
+      "Bash(ip:*)",
+      "Bash(whois:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(http:*)",
+      "Bash(rsync:*)",
+
+      "Bash(tar:*)",
+      "Bash(zip:*)",
+      "Bash(unzip:*)",
+      "Bash(gzip:*)",
+      "Bash(gunzip:*)",
+      "Bash(zcat:*)",
+      "Bash(bzip2:*)",
+      "Bash(bunzip2:*)",
+      "Bash(bzcat:*)",
+      "Bash(xz:*)",
+      "Bash(unxz:*)",
+      "Bash(xzcat:*)",
+      "Bash(zstd:*)",
+      "Bash(unzstd:*)",
+      "Bash(zstdcat:*)",
+      "Bash(lz4:*)",
+      "Bash(7z:*)",
+      "Bash(7za:*)",
+      "Bash(rar:*)",
+      "Bash(unrar:*)",
+
+      "Bash(ps:*)",
+      "Bash(pgrep:*)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(killall:*)",
+      "Bash(time:*)",
+      "Bash(timeout:*)",
+      "Bash(nohup:*)",
+
+      "Bash(pbcopy:*)",
+      "Bash(pbpaste:*)",
+      "Bash(open:*)",
+      "Bash(sw_vers:*)",
+
+      "Bash(dot:*)",
+      "Bash(neato:*)",
+      "Bash(fdp:*)",
+      "Bash(sfdp:*)",
+      "Bash(twopi:*)",
+      "Bash(circo:*)",
+      "Bash(plantuml:*)",
+      "Bash(mermaid:*)",
+      "Bash(mmdc:*)",
+      "Bash(d2:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(podman:*)",
+      "Bash(podman-compose:*)",
+
+      "Bash(npm publish:*)",
+      "Bash(yarn publish:*)",
+      "Bash(pnpm publish:*)",
+      "Bash(cargo publish:*)",
+      "Bash(twine:*)",
+      "Bash(poetry publish:*)",
+      "Bash(pdm publish:*)",
+
+      "Bash(docker push:*)",
+      "Bash(docker login:*)",
+      "Bash(podman push:*)",
+      "Bash(podman login:*)",
+
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr close:*)",
+      "Bash(gh pr reopen:*)",
+      "Bash(gh pr review:*)",
+
+      "Bash(gh issue close:*)",
+      "Bash(gh issue reopen:*)",
+      "Bash(gh issue transfer:*)",
+
+      "Bash(gh repo create:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh repo fork:*)",
+
+      "Bash(gh run rerun:*)",
+      "Bash(gh run cancel:*)",
+
+      "Bash(gh release create:*)",
+      "Bash(gh release edit:*)",
+      "Bash(gh release delete:*)",
+
+      "Bash(gh gist create:*)",
+      "Bash(gh gist edit:*)",
+      "Bash(gh gist delete:*)",
+
+      "Bash(gh project create:*)",
+      "Bash(gh project edit:*)",
+      "Bash(gh project close:*)",
+      "Bash(gh project delete:*)",
+
+      "Bash(gh label create:*)",
+      "Bash(gh label edit:*)",
+      "Bash(gh label delete:*)",
+
+      "Bash(gh config set:*)",
+
+      "Bash(gh auth login:*)",
+      "Bash(gh auth logout:*)"
+    ],
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*secret*)",
+      "Read(**/.ssh/**)",
+      "Read(**/.aws/**)",
+      "Read(**/.gnupg/**)",
+
+      "Bash(git push -f:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git push --delete:*)",
+      "Bash(git push origin --delete:*)",
+
+      "Bash(gh repo delete:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/path_check.py"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -75,6 +75,9 @@ if [ -f ~/.fzf.zsh ]; then
     source ~/.fzf.zsh
 fi
 
+# Use strict sandboxing for Claude:
+alias claude="claude-sandbox claude"
+
 # Activate my Python environment:
 source ~/pyenv/bin/activate
 

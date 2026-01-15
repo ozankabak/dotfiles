@@ -62,3 +62,29 @@ brew install the_silver_searcher
 ## TMux Notes
 
 I use a custom script (`scripts/tmux-select-pane`) to facilitate seamless movements between TMux and VIM panes.
+
+## Claude
+
+I use the scripts `scripts/claude-sandbox` to limit Claude with read/write access to the current directory and read-only access to the necessary system directories (more below). The command `claude` is an alias to run Claude with this sandboxing. See [this repository](https://github.com/neko-kai/claude-code-sandbox) for more details. Mind the following:
+- This is macOS-specific, and Linux will require a different approach.
+- We *do not* use Claude's built-in sandboxing (see `settings.json`) since it is too permissive.
+- There was a bug in the upstream `sandbox-exec` utility due to macOS's `realpath` not supporting the `-m` flag, so I changed the line
+  ```
+  TARGET_DIR="$(realpath -m "${TARGET_DIR}" 2>/dev/null)"
+  ```
+  to
+  ```
+  TARGET_DIR="$(cd "${TARGET_DIR}" 2>/dev/null && pwd -P || echo "${TARGET_DIR}")"
+  ```
+- I gave access to certain standard "files" (e.g., `/dev/stdin`) the upstream code doesn't. This is necessary for things like Python's `subprocess` module to work properly. Find these additions by searching for the comment `;; Missing from upstream`.
+
+### Permissions/Access Model
+
+This setup consists of three layers:
+- The primary security boundary is an OS-level macOS sandbox (`sandbox-exec`) that restricts file reads to the current working directory and system paths, limits writes to the project directory, `/tmp`, and select caches (`~/.cache`, `~/.claude`), while permitting full network access.
+- A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside the sandbox boundaries, catching many mistakes before they hit the OS sandbox.
+- The permissions layer in `settings.json` controls prompting UX rather than security: it auto-approves ~200 common development commands (coreutils, git, build tools, compilers, linters, network utilities) for seamless workflow, requires confirmation for operations affecting remote systems (`git push`, package publishing, `docker`, GitHub write operations), and outright blocks dangerous patterns (`sudo`/`su`, force push, repository deletion) and sensitive file reads (.env, secrets,
+  credentials).
+
+The aim is to prioritize development productivity by eliminating prompts for safe local operations while maintaining human oversight for irreversible or remote-affecting actions, with the OS sandbox as the ultimate safety net.
+
