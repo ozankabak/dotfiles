@@ -1,0 +1,72 @@
+{
+    "editor.accessibilitySupport": "off",
+    "editor.rulers": [
+        100
+    ],
+
+    "notebook.output.textLineLimit": 50,
+
+    "files.associations": {
+        "*.mpp": "cpp"
+    },
+    "files.trimTrailingWhitespace": true,
+    "[markdown]": {
+        "files.trimTrailingWhitespace": false
+    },
+    "[diff]": {
+        "files.trimTrailingWhitespace": false
+    },
+
+    "cmake.configureOnOpen": true,
+    "xmake.buildLevel": "normal",
+
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.formatDocument": "explicit",
+            "source.fixAll": "explicit"
+        },
+        "editor.formatOnSave": true
+    },
+    "python.analysis.typeCheckingMode": "basic",
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticMode": "openFilesOnly",
+
+    "mypy-type-checker.args": ["--config-file=pyproject.toml"],
+    "mypy-type-checker.importStrategy": "fromEnvironment",
+
+    "ruff.nativeServer": true,
+    "ruff.configurationPreference": "filesystemFirst",
+
+    "rust-analyzer.runnables.extraTestBinaryArgs": [
+        "--nocapture"
+    ],
+
+    "docker.extension.enableComposeLanguageServer": false,
+    "[dockercompose]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "chat.tools.terminal.autoApprove": {},
+    "chat.agent.maxRequests": 250,
+
+    "githubPullRequests.pullBranch": "never",
+    "diffEditor.codeLens": true,
+    "gitlens.ai.model": "vscode",
+    "workbench.editorAssociations": {
+        "git-rebase-todo": "default"
+    }
+}
+
