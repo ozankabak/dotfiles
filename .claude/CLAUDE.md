@@ -1,8 +1,8 @@
 # CLAUDE.md — Universal Project Guidelines
 
-This document guides Claude instances working on projects in this environment. Follow these conventions unless a project-specific `CLAUDE.md` overrides them.
+This document contains instructions and guidelines for Claude instances working on software development projects.
 
-**Override mechanism**: If a project contains its own `CLAUDE.md`, those project-specific guidelines take precedence. When conflicts exist, prefer the project's conventions over this document.
+**Override mechanism**: If a project contains its own `CLAUDE.md` file, those project-specific instructions take precedence. When conflicts exist, follow the project-specific instructions.
 
 ---
 
@@ -98,23 +98,26 @@ git branch -d feature/descriptive-name
 ```
 
 ### Conflict Resolution
-When your branch conflicts with `main` or other branches:
-- Rebase your branch onto latest `main` before opening or updating a PR.
-- If multiple worktrees have conflicting changes, coordinate via `## Session Notes` in `TODO.md` (see below).
+When your branch conflicts with `main` (or the target branch):
+- Rebase your branch onto the latest `main` (i.e. target branch) before opening or updating a PR.
+- If multiple worktrees have conflicting changes, coordinate via `## Session Notes` in `PROJECT.md` (see below).
 
 ---
 
-## Project Planning & `TODO.md` Management
+## Project Planning & `PROJECT.md` Management
 
 ### Creating the Initial Plan
 
-Given the initial description of the project, create a `TODO.md` file that summarizes your understanding of the project, its goals, and a detailed step-by-step plan to implement it.
+Given the initial description of the project, create a `PROJECT.md` file that summarizes your understanding of the project, its goals, and a detailed step-by-step plan to implement it.
 
-Maintain this file with hierarchical check boxes for all non-trivial tasks.
+Maintain this file with hierarchical check boxes for all non-trivial tasks and/or steps.
 
-If you do not have enough information to create a initial plan, create a preliminary plan and interview me with what you know to fill in the blanks. As you go through the process, when you reach a stage where you feel like you can create a plan with enough details, you may mark any remaining uncertain areas as TODO items and refine them later during development.
+If you do not have enough information to create a initial plan, create a preliminary plan and interview me with what you know to fill in the blanks. As you go through the process, when you reach a stage where you feel like you can create a plan with enough details, you may:
+- Treat any remaining uncertain areas as work steps (discovery tasks),
+- Add them to the "Status" section as steps,
+- Refine them later during development.
 
-### Structure of the `TODO.md` File
+### Structure of the `PROJECT.md` File
 ```markdown
 # Overview
 
@@ -129,9 +132,9 @@ A few paragraphs describing your understanding of the project, overall project g
 # Non-Goals
 
 - List any non-goals to clarify scope.
-- There may not be any initially, and do not add this section if so.
+- If you are not clear about non-goals initially, no need to add this section until you have clarity.
 
-# TODO
+# Status
 
 ## Current Sprint
 
@@ -145,22 +148,26 @@ A few paragraphs describing your understanding of the project, overall project g
 
 ## Completed
 - [x] Previous completed items (move here, don't delete)
+
+## Session Notes
+- [2024-01-11] Accumulate notes here as you work on the project.
+- [2024-01-10] Finish each session with a brief summary of what was done, blockers, next steps.
 ```
 
 ### Rules
-1. **Never recreate** `TODO.md` — update existing content.
-2. **Update immediately** as work progresses — never defer to end of session.
-3. **Check off tasks** with `[x]` the moment they're complete.
-4. **Break down tasks** as understanding develops.
+1. **Never recreate** `PROJECT.md` — update existing content.
+2. **Update immediately** as work progresses — never defer to the end of session.
+3. **Check off steps** with `[x]` the moment they're complete.
+4. **Break down steps** as understanding develops.
 5. **Document decisions** and deviations from the original plan.
-6. **Reflect true state** — `TODO.md` must always show current project status.
-7. **Never include** `TODO.md` in a PR - it is for your internal use only until project completion.
+6. **Reflect true state** — `PROJECT.md` **must** always show current project status.
+7. **Never include** `PROJECT.md` in a PR - it is for your internal use only until project completion.
 
 ### Session Handoff
 When finishing a session or before context becomes stale:
-1. Ensure `TODO.md` is fully up-to-date with current progress.
+1. Ensure `PROJECT.md` is fully up-to-date with current progress.
 2. Commit or stash any work-in-progress.
-3. Add a brief status note under `## Session Notes` in `TODO.md`:
+3. Add a brief summary note under `## Session Notes` in `PROJECT.md`, e.g.:
    ```markdown
    ## Session Notes
    - [2024-01-15] Completed auth module, starting on API integration. Blocked on OAuth config.
@@ -172,44 +179,45 @@ When finishing a session or before context becomes stale:
 
 When starting a new session on a project with existing code:
 
-1. **Read `TODO.md` first** — Understand current state, goals, and what's in progress.
+1. **Read `PROJECT.md` first** — Understand current state, goals, and what's in progress.
 2. **Check `## Session Notes`** — Review context from previous sessions, especially blockers.
 3. **Review recent commits** — Run `git log --oneline -20` to understand recent momentum.
 4. **Understand before modifying** — Read existing code before making changes. Don't "improve" code you don't understand sufficiently.
 5. **Don't restart from scratch** — Build on existing work; refactor incrementally if necessary.
 
-If the project has no `TODO.md` file, create one by analyzing the codebase and documenting your understanding before making changes.
+If the project has no `PROJECT.md` file, create one by analyzing the codebase and documenting your understanding before making changes.
 
 ---
 
 ## When to Ask for Clarification
 
 Pause and ask before proceeding when:
-1. **Ambiguous requirements** affect architecture or design decisions. Any clarification resolving your confusion should likely end up, in some form, at some appropriate section of the `TODO.md` file.
+1. **Ambiguous requirements** affect architecture or design decisions.
 2. **Security-sensitive choices**; e.g. authentication, authorization, data handling.
 3. **Destructive operations** like deleting data, dropping tables, removing files.
-4. **Significant trade-offs** where multiple valid approaches exist with different implications. Like ambiguous requirements, a decision here will likely affect the `TODO.md` file.
+4. **Significant trade-offs** where multiple valid approaches exist with different implications.
 5. **Scope uncertainty** — unclear whether something is in or out of scope. Is it a goal, or a step towards an existing goal, or a non-goal?
 6. **External integrations** — unclear API contracts or third-party dependencies.
 
-When in doubt, ask. A brief clarification is cheaper than rework.
+When in doubt, ask. A brief clarification is cheaper than rework. Any clarification resolving your confusion about (1), (4) or (5) **must** end up, in some form, at some appropriate section of the `PROJECT.md` file.
 
 ---
 
 ## Incremental Development Approach
 
 ### Planning Principles
-1. **Testability drives boundaries**: Each step must be independently testable.
+1. **Testability drives boundaries**: Each step **must** be independently testable.
 2. **Small, atomic steps**: Prefer more smaller steps over fewer large ones.
 3. **Test infrastructure first**: The first milestone is always achieving 100% test coverage infrastructure.
-4. **Maintain coverage**: Every PR must maintain 100% coverage (use `# pragma: no cover` only when truly necessary or justifiable).
+4. **Maintain coverage**: Every PR **must** maintain 100% coverage. Use `# pragma: no cover` only when truly necessary or justifiable. For cases that warrant the use of this escape hatch, you **must** document your justification under the `Session Notes` section in the `PROJECT.md` file - AND mention these exemptions when you finish the project.
 
 ### Step Sequence Template
 1. Set up testing infrastructure and CI hooks.
 2. Implement core types/interfaces with tests.
 3. Implement functionality incrementally, tests first.
 4. Integration tests for component interactions.
-5. **Final step (always)**: Performance/complexity review—identify and fix bottlenecks or suboptimal algorithms, data structures. Iterate, as necessary, to fix.
+5. Review your work with respect to performance and computational complexity. Identify and fix bottlenecks or suboptimal algorithms and/or data structures. Iterate, as necessary, to fix.
+6. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (not in comments or docstrings, in code). Iterate, as necessary, to find the best form.
 
 ### Commit Discipline
 - Run tests, type-checking (when applicable) and any other checks before every commit.
@@ -230,9 +238,9 @@ When in doubt, ask. A brief clarification is cheaper than rework.
 ### Python
 **Always use the latest stable Python version** (currently 3.14+).
 
-**Toolchain**:
-- **Package manager**: `uv` (not pip, poetry, or pipenv)
-  - *IMPORTANT*: Do not forget to activate the project's virtual environment as a first, one-time step in every session before you run any Python code:
+#### Toolchain
+- **Package manager**: `uv` (not `pip`, `poetry`, or `pipenv`)
+  - *IMPORTANT*: Activate the project's virtual environment as a first, one-time step in **every session** before you run any Python code:
   ```bash
   source .venv/bin/activate
   ```
@@ -308,10 +316,10 @@ Note that the versions above may be out of date; always use the latest stable ve
 ### C/C++
 **Always use the latest stable standard** (currently C++23).
 
-**Toolchain**:
+#### Toolchain
 - **Build system**: `xmake`
 - **Compiler**: Latest GCC or Clang with full C++23 support
-- **Testing**: Integrated via xmake targets
+- **Testing**: Leverage xmake targets
 
 **xmake.lua baseline**:
 ```lua
@@ -330,8 +338,9 @@ target("test")
 ```
 
 **Style conventions**:
+- Use zero-cost abstractions where applicable. For example, avoid `std::function` when there is an alternative that does not increase the complexity significantly.
 - CRTP for static polymorphism (avoid virtual functions where possible)
-- C++20 concepts for template constraints
+- C++ concepts for template constraints
 - `std::optional` for nullable returns
 - `snake_case` methods, `PascalCase` classes, `_private` prefix
 - Modules (`.cppm`) for clean interfaces
@@ -339,7 +348,7 @@ target("test")
 ### Rust
 **Follow Apache DataFusion conventions** (PMC-level standards).
 
-**Toolchain**:
+#### Toolchain
 - **Package manager**: `cargo`
 - **Linting**: `clippy` (pedantic)
 - **Formatting**: `rustfmt`
@@ -405,11 +414,11 @@ cargo llvm-cov --fail-under-lines 100
 5. Integration tests complement, not replace, unit tests.
 
 **When can you defer tests?**:
-- For exploratory prototypes or spikes - must be clearly marked as such.
+- For exploratory prototypes or spikes - **must** be clearly marked as such.
 - Proof-of-concept code that will be rewritten.
 - Scripts intended for one-time use.
 
-In these cases, add a `# TODO: Add tests before production use` comment. If you decide to adopt the code in production later, add a high-priority task to `TODO.md` to add test coverage. Unless the project specifies otherwise, house all such code in one single folder (e.g., `scripts/`).
+In these cases, add a `# TODO: Add tests before production use` comment. If you decide to adopt the code in production later, add a high-priority work item to `PROJECT.md` to add test coverage. Unless the project specifies otherwise, house all such code in one single folder (e.g., `scripts/`).
 
 ### Code Style Philosophy
 1. **Idiomatic first**: Use language-native patterns and standard library features.
@@ -425,7 +434,7 @@ In these cases, add a `# TODO: Add tests before production use` comment. If you 
 For languages with exceptions:
 1. **Use domain-specific hierarchies** — Create a base exception for your module (e.g., `AgentException`), then specific subclasses.
 2. **Always chain causes when possible** — Use `raise NewError("message") from original_error` to preserve the context.
-3. **Include actionable context** — Error messages should help diagnose the problem.
+3. **Include actionable context** — Error messages **must** help diagnose the problem.
 
 ### Error Message Quality
 Good error messages answer: *What failed? Why? What values were involved? How to fix?*
@@ -445,7 +454,7 @@ raise ToolArgumentError(f"Invalid value for parameter '{name}': expected {expect
 ```
 
 ### Cause Chain Serialization
-When serializing exceptions (e.g., for APIs or logs), preserve the chain:
+When serializing exceptions (e.g., for APIs or logs), preserve the chain when possible. Python example:
 ```python
 if obj.__cause__ is not None:
     result["caused_by"] = serialize_exception(obj.__cause__)

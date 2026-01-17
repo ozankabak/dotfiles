@@ -129,6 +129,139 @@ test_cmd 2 "unsafe backticks" "echo \`cat /etc/passwd\`"
 test_cmd 2 "nested backticks+\$()" "echo \`cat \$(cat /etc/hosts)\`"
 
 echo ""
+echo "=== Nested Substitutions ==="
+# Backticks inside $()
+test_cmd 0 "safe backticks in \$()" "echo \$(echo \`cat ./file\`)"
+test_cmd 2 "unsafe backticks in \$()" "echo \$(echo \`cat /etc/passwd\`)"
+# $() inside $()
+test_cmd 0 "safe nested \$()" "echo \$(echo \$(cat ./file))"
+test_cmd 2 "unsafe nested \$()" "echo \$(echo \$(cat /etc/passwd))"
+# Triple nesting
+test_cmd 2 "triple nested unsafe" "echo \$(echo \$(echo \`cat /etc/passwd\`))"
+test_cmd 0 "triple nested safe" "echo \$(echo \$(echo \`cat ./file\`))"
+# Mixed with process substitution
+test_cmd 2 "backticks in <()" "diff <(echo \`cat /etc/passwd\`) ./file"
+test_cmd 0 "safe backticks in <()" "diff <(echo \`cat ./file\`) ./other"
+# Backticks with redirects inside
+test_cmd 2 "backticks with redirect" "echo \`cat /etc/passwd > ./out\`"
+test_cmd 0 "safe backticks with redirect" "echo \`cat ./file > ./out\`"
+
+echo ""
+echo "=== Substitutions Inside Quotes ==="
+# $() inside double quotes - shlex doesn't split, must scan raw string
+test_cmd 2 "\$() in double quotes" 'echo "hello $(cat /etc/passwd)"'
+test_cmd 0 "safe \$() in double quotes" 'echo "hello $(cat ./file)"'
+# Backticks inside double quotes
+test_cmd 2 "backticks in double quotes" 'echo "hello `cat /etc/passwd`"'
+test_cmd 0 "safe backticks in double quotes" 'echo "hello `cat ./file`"'
+# Process substitution reference in quotes
+test_cmd 2 "<() in double quotes" 'cat "$(cat /etc/passwd)"'
+# Nested inside quotes
+test_cmd 2 "nested \$() in quotes" 'echo "$(echo $(cat /etc/passwd))"'
+# Escaped backticks for nesting (old-style shell)
+test_cmd 2 "escaped backticks nesting" 'echo `echo \`cat /etc/passwd\``'
+test_cmd 0 "safe escaped backticks" 'echo `echo \`cat ./file\``'
+
+echo ""
+echo "=== Complex Nested Substitutions ==="
+# Mixed $() and backticks
+test_cmd 2 "\$() inside backticks" 'echo `cat $(echo /etc/passwd)`'
+test_cmd 2 "backticks inside \$()" 'echo $(cat `echo /etc/passwd`)'
+test_cmd 0 "safe mixed nesting" 'echo $(cat `echo ./file`)'
+
+# Triple+ nesting with mixed syntax
+test_cmd 2 "triple: \$() > backtick > \$()" 'echo $(echo `echo $(cat /etc/passwd)`)'
+test_cmd 2 "triple: backtick > \$() > backtick" 'echo `echo $(echo \`cat /etc/passwd\`)`'
+test_cmd 0 "safe triple mixed" 'echo $(echo `echo $(cat ./file)`)'
+
+# Process substitution with nested commands
+test_cmd 2 "<() with nested backticks" 'diff <(cat `echo /etc/passwd`) ./file'
+test_cmd 2 "<() with nested \$()" 'diff <(cat $(echo /etc/passwd)) ./file'
+test_cmd 2 ">() with nested backticks" 'tee >(cat `echo /etc/passwd`)'
+test_cmd 0 "safe <() with nesting" 'diff <(cat $(echo ./a)) ./b'
+
+# Quoting mixed with substitution
+test_cmd 2 "double-quoted \$() with backticks" 'echo "$(cat `echo /etc/passwd`)"'
+test_cmd 2 "double-quoted backticks with \$()" 'echo "`cat $(echo /etc/passwd)`"'
+test_cmd 2 "path built from pieces" 'cat $(echo /etc)/passwd'
+test_cmd 2 "path in nested quotes" 'echo "$(echo "$(cat /etc/passwd)")"'
+
+# Escaped chars that should NOT execute
+test_cmd 0 "escaped \$ in double quotes" 'echo "\$(cat /etc/passwd)"'
+test_cmd 0 "single quotes block subst" "echo '\$(cat /etc/passwd)'"
+test_cmd 0 "single quotes block backticks" "echo '\`cat /etc/passwd\`'"
+
+# ANSI-C quoting ($'...') - no substitution inside
+test_cmd 0 "ANSI-C quoting" "echo \$'/etc/passwd'"
+test_cmd 0 "ANSI-C with \$() inside" "echo \$'\$(cat /etc/passwd)'"
+test_cmd 0 "ANSI-C with escaped quote" "echo \$'safe\\'\$(cat /etc/passwd)'"
+test_cmd 2 "real \$() after ANSI-C" "echo \$'safe' \$(cat /etc/passwd)"
+
+echo ""
+echo "=== Escape Sequences ==="
+# Escaped $ - substitution doesn't execute, content is literal
+test_cmd 0 "\\\$ basic" 'echo \$foo'
+test_cmd 0 "\\\$((...)) arithmetic" 'echo \$((1+1))'
+test_cmd 0 "\\\$ in dquotes" 'echo "price is \$100"'
+test_cmd 0 "\\\$() escaped" 'echo \$(cat /etc/passwd)'
+test_cmd 0 "\\\$((cmd)) escaped" 'echo \$((cat /etc/passwd))'
+
+# Double backslash = escaped backslash + real substitution (executes!)
+test_cmd 2 "\\\\\$() executes" 'echo \\$(cat /etc/passwd)'
+
+# Nested real substitution inside escaped outer (inner executes!)
+test_cmd 2 "unescaped inside escaped \$()" 'echo \$(foo $(cat /etc/passwd))'
+test_cmd 2 "unescaped inside escaped backtick" 'echo \`foo `cat /etc/passwd``'
+
+# Escaped backticks - \` is literal char, paths may still flag depending on tokenization
+test_cmd 0 "\\\` at start" 'echo \`not a command'
+test_cmd 0 "\\\` in dquotes" 'echo "backtick: \` here"'
+test_cmd 0 "\\\` paired (literal)" 'echo \`cat /etc/passwd\`notclosed'
+test_cmd 0 "\\\` wrapping path (relative)" 'echo \`/etc/passwd\`'
+test_cmd 2 "\\\\\` executes" 'echo \\`cat /etc/passwd`'
+test_cmd 2 "\\\\\` path as cmd" 'echo \\`/etc/passwd`'
+test_cmd 0 "\\\\\` relative cmd" 'echo \\`cat/etc/passwd`'
+
+# Other escapes
+test_cmd 2 "unescaped in dquotes" 'echo "result: $(cat /etc/passwd)"'
+test_cmd 0 "trailing backslash" 'echo test\'
+
+# Here-string/heredoc markers (should not trigger)
+test_cmd 0 "<<< safe" 'cat <<< "hello"'
+test_cmd 0 "<< heredoc marker" 'cat << EOF'
+
+# Multiple substitutions in one command
+test_cmd 2 "two unsafe \$()" 'echo $(cat /etc/passwd) $(cat /etc/hosts)'
+test_cmd 2 "one safe one unsafe" 'echo $(cat ./file) $(cat /etc/passwd)'
+test_cmd 2 "unsafe in second backtick" 'echo `cat ./a` `cat /etc/passwd`'
+
+# Deeply nested (4+ levels)
+test_cmd 2 "quad nested" 'echo $(echo $(echo $(echo $(cat /etc/passwd))))'
+test_cmd 2 "quad mixed" 'echo `echo $(echo \`echo $(cat /etc/passwd)\`)`'
+test_cmd 0 "safe quad nested" 'echo $(echo $(echo $(echo $(cat ./file))))'
+
+# Redirect inside substitution
+test_cmd 2 "redirect in \$()" 'echo $(cat /etc/passwd > /tmp/x)'
+test_cmd 2 "redirect in backticks" 'echo `cat /etc/passwd > /tmp/x`'
+test_cmd 2 "input redirect in \$()" 'echo $(cat < /etc/passwd)'
+
+# Quoted content with parens inside substitutions (quote-aware paren matching)
+test_cmd 0 "single-quoted parens in \$()" 'echo $(echo '\''foo(bar)'\'')'
+test_cmd 0 "double-quoted parens in \$()" 'echo $(echo "foo(bar)")'
+test_cmd 0 "escaped paren in \$()" 'echo $(echo foo\(bar\))'
+test_cmd 2 "path after quoted parens" 'echo $(echo "foo()" /etc/passwd)'
+test_cmd 0 "complex quoted parens" 'echo $(echo "a]b(c)d" '\''e(f)g'\'')'
+test_cmd 2 "path with quoted parens" 'cat $(echo "test()" /etc/passwd)'
+test_cmd 0 "nested quotes with parens" 'echo $(echo "outer($(echo inner))")'
+test_cmd 0 "mixed quotes parens safe" 'echo $(foo "a]b(" '\''c)d'\'' )'
+
+# Escaped process substitutions \<() and \>()
+test_cmd 0 "\\\<() escaped" 'echo \<(cat /etc/passwd)'
+test_cmd 0 "\\\>() escaped" 'echo \>(cat /etc/passwd)'
+test_cmd 2 "<() executes" 'cat <(cat /etc/passwd)'
+test_cmd 2 ">() executes" 'diff >(cat /etc/passwd) ./file'
+
+echo ""
 echo "=== Edge Cases ==="
 test_cmd 0 "empty command" ""
 test_cmd 0 "no paths" "echo hello world"
@@ -202,6 +335,44 @@ test_cmd 2 "docker mount outside" "docker run -v /etc:/mnt img"
 test_cmd 2 "curl output outside" "curl -o /etc/file https://example.com"
 test_cmd 0 "curl output CWD" "curl -o ./downloaded.txt https://example.com"
 test_cmd 2 "rsync outside" "rsync -av ./src /opt/dest"
+
+echo ""
+echo "=== Sed Patterns ==="
+# Substitution patterns - slashes are delimiters, not paths
+test_cmd 0 "sed basic subst" "sed 's/foo/bar/' ./file"
+test_cmd 0 "sed global subst" "sed 's/foo/bar/g' ./file"
+test_cmd 0 "sed alternate delim" "sed 's|foo|bar|' ./file"
+test_cmd 0 "sed escaped slashes" "sed 's/path\\/to/other/' ./file"
+test_cmd 0 "sed multiple -e" "sed -e 's/a/b/' -e 's/c/d/' ./file"
+test_cmd 0 "sed path-like pattern" "sed 's~/usr/bin~local~' ./file"
+# Address patterns starting with / look like paths (FP - requires command-aware parsing)
+test_cmd 2 "sed addr /pattern/d (FP)" "sed '/pattern/d' ./file"
+test_cmd 2 "sed addr /x/p (FP)" "sed -n '/match/p' ./file"
+# Real file arguments - should be validated
+test_cmd 0 "sed -i safe file" "sed -i 's/a/b/' ./config"
+test_cmd 2 "sed -i outside file" "sed -i 's/a/b/' /etc/config"
+test_cmd 0 "sed -f safe script" "sed -f ./script.sed ./file"
+test_cmd 2 "sed -f outside script" "sed -f /etc/sed.script ./file"
+# Safe patterns
+test_cmd 0 "sed numeric range" "sed -n '1,10p' ./file"
+test_cmd 0 "sed regex special" "sed 's/.*/prefix: &/' ./file"
+
+echo ""
+echo "=== Awk/Grep/Perl Patterns ==="
+# Patterns starting with / look like paths (FP - requires command-aware parsing)
+test_cmd 2 "awk /pattern/ (FP)" "awk '/pattern/ {print}' ./file"
+test_cmd 2 "grep -E regex (FP)" "grep -E '/[a-z]+/' ./file"
+test_cmd 2 "perl /pattern/ (FP)" "perl -ne '/pattern/ && print' ./file"
+test_cmd 2 "cut -d/ (FP)" "cut -d/ -f1 ./file"
+# Safe patterns (no leading /)
+test_cmd 0 "awk field sep" "awk -F: '{print \$1}' ./file"
+test_cmd 0 "grep basic" "grep pattern ./file"
+test_cmd 0 "perl subst" "perl -pe 's/foo/bar/' ./file"
+# Real file arguments - should be validated
+test_cmd 0 "awk -f safe" "awk -f ./script.awk ./data"
+test_cmd 2 "awk -f outside" "awk -f /var/script.awk ./data"
+test_cmd 0 "grep -r safe" "grep -r pattern ./src"
+test_cmd 2 "grep -r outside" "grep -r pattern /var/log"
 
 echo ""
 echo "================================"
