@@ -156,7 +156,7 @@ A few paragraphs describing your understanding of the project, overall project g
 
 ### Rules
 1. **Never recreate** `PROJECT.md` — update existing content.
-2. **Update immediately** as work progresses — never defer to the end of session.
+2. **Update immediately** as work progresses — never defer to the end of session. This is **very important** - update it as you go.
 3. **Check off steps** with `[x]` the moment they're complete.
 4. **Break down steps** as understanding develops.
 5. **Document decisions** and deviations from the original plan.
@@ -412,6 +412,7 @@ cargo llvm-cov --fail-under-lines 100
 3. Tests document behavior — write them as specifications.
 4. Use `# pragma: no cover` only for genuinely untestable code (OS-specific branches, defensive assertions).
 5. Integration tests complement, not replace, unit tests.
+6. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
 
 **When can you defer tests?**:
 - For exploratory prototypes or spikes - **must** be clearly marked as such.
