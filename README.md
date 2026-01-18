@@ -26,11 +26,11 @@ brew install lsd
 
 I use a virtual environment, `pyenv`, to manage Python versions and packages and avoid cluttering system Python installations. To set up the virtual environment, use
 ```
-python -m venv ~/pyenv
+python3 -m venv ~/pyenv
 ```
 Do not forget to upgrade the virtual environment after upgrading Python:
 ```
-python -m venv --upgrade ~/pyenv
+python3 -m venv --upgrade ~/pyenv
 ```
 
 ## VIM Notes

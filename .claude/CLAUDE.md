@@ -53,7 +53,11 @@ cd .worktrees/feature-name
 - Keep commits small and testable.
 
 ### Completing Work
-Once you make sure you did not accidentally check in any extra files, and your changes look good to you, **make sure** that all project documentation (e.g., the `README.md` file, anything under `docs/`) reflect your changes. This last step is **very important**, as failure to do this results in documentation rot over time. Once you ensure that documentation is up-to-date, open a PR with:
+Follow this checklist when completing your work with a PR:
+- **Make sure** you did not accidentally check in any extra files (like any temporary files or the project file `PROJECT.md`).
+- **Make sure** you did the performance/computational complexity *and* idiomatic programming/succinctness self-reviews (more on these below), and the final state of the code looks good to you.
+- **Make sure** that all project documentation (e.g., the `README.md` file, anything under `docs/`) reflect your changes. This step is **very important**, as failure to do this results in documentation rot over time.
+Once you are done with this checklist, open a PR with:
 1. **Descriptive title**: Conventional commit format (e.g., `feat(auth): add OAuth2 provider support`)
 2. **Body sections**:
    - Summary of changes
@@ -210,7 +214,7 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 1. **Testability drives boundaries**: Each step **must** be independently testable.
 2. **Small, atomic steps**: Prefer more smaller steps over fewer large ones.
 3. **Test infrastructure first**: The first milestone is always achieving 100% test coverage infrastructure.
-4. **Maintain coverage**: Every PR **must** maintain 100% coverage. Use `# pragma: no cover` only when truly necessary or justifiable. For cases that warrant the use of this escape hatch, you **must** document your justification under the `Session Notes` section in the `PROJECT.md` file - AND mention these exemptions when you finish the project.
+4. **Always maintain coverage**: Every PR **must** maintain 100% coverage. Use `# pragma: no cover` only when truly necessary or justifiable. For cases that warrant the use of this escape hatch, you **must** document your justification under the `Session Notes` section in the `PROJECT.md` file - AND mention these exemptions when you finish the project.
 
 ### Step Sequence Template
 1. Set up testing infrastructure and CI hooks.
