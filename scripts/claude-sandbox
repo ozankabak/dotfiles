@@ -49,7 +49,7 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
 (allow file-read*
     ;; Git configuration (for commits)
     (subpath (string-append (param "HOME_DIR") "/.config/git"))
-    ;; Missing from upstream
+    ;; Missing from upstream - GitHub CLI configuration
     (subpath (string-append (param "HOME_DIR") "/.config/gh"))
     (literal (string-append (param "HOME_DIR") "/.gitconfig"))
     ;; Nix configuration
@@ -143,14 +143,14 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
     (literal "/dev/random")
     (regex #"^/dev/tty*")
     (regex #"^/dev/pty*")
-    ;; Missing from upstream
+    ;; Missing from upstream - necessary for Python subprocess library to work correctly
     (literal "/dev/stdin")
     (literal "/dev/fd/0")  ; stdin
     (literal "/dev/fd/1")  ; stdout
     (literal "/dev/fd/2")  ; stderr
 )
 
-;; Missing from upstream
+;; Missing from upstream - allow read access to Xcode developer files
 (allow file-read*
     (literal "/dev/fd")
     (subpath "/Library/Developer")
@@ -281,6 +281,8 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
     (subpath (string-append (param "HOME_DIR") "/.jgit"))
     (subpath (string-append (param "HOME_DIR") "/.config/jgit"))
     (subpath (string-append (param "HOME_DIR") "/Library/Caches/Coursier"))
+    ;; Missing from upstream - cache for managed Python installations by uv (may be OK to give just read access)
+    (subpath (string-append (param "HOME_DIR") "/.local/share/uv"))
 )
 
 ;; read [~]/Library/Java
