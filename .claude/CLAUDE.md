@@ -93,6 +93,7 @@ gh api repos/{owner}/{repo}/pulls/{pr}/comments -f body="Explanation of this sec
 When responding to PR review comments:
 - Always add new commits (do not amend or force-push during review).
 - Use descriptive commit messages: `fix: address review feedback on error handling`.
+- When you make a new commit to address a review, update the PR body to reflect the change if necessary. **Always** keep the PR body accurate and up-to-date with the changes in the PR.
 - Squash commits on merge if the repository is configured to do so.
 
 ### Worktree Cleanup
