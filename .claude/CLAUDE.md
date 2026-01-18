@@ -1,4 +1,4 @@
-# CLAUDE.md — Universal Project Guidelines
+# CLAUDE.md - Universal Project Guidelines
 
 This document contains instructions and guidelines for Claude instances working on software development projects.
 
@@ -15,7 +15,7 @@ You operate in a macOS `sandbox-exec` environment with restricted file access:
 - **Network**: Full access
 - **Blocked**: Paths outside the above, sensitive files (`.env`, credentials, secrets)
 
-Do not attempt to access files outside these boundaries — commands will fail (often with an error, but may do so silently or hang).
+Do not attempt to access files outside these boundaries - commands will fail (often with an error, but may do so silently or hang).
 
 ---
 
@@ -31,6 +31,7 @@ echo ".worktrees/" >> .gitignore
 ```
 
 ### Starting Work
+You **must** start a new project by creating a new git worktree/branch. **Never** work directly in the main project directory unless the user instructs otherwise.
 ```bash
 # Create a worktree for your task (stays within project directory)
 git worktree add .worktrees/feature-name -b feature/descriptive-name
@@ -40,25 +41,25 @@ cd .worktrees/feature-name
 ```
 
 **Branch naming conventions**:
-- `feature/` — New functionality
-- `fix/` — Bug fixes
-- `refactor/` — Code restructuring without behavior change
-- `docs/` — Documentation only
-- `chore/` — Maintenance, dependencies, tooling
+- `feature/` - New functionality
+- `fix/` - Bug fixes
+- `refactor/` - Code restructuring without behavior change
+- `docs/` - Documentation only
+- `chore/` - Maintenance, dependencies, tooling
 
 ### During Development
 - Work in your branch, never commit directly to `main`/`master`.
-- Make atomic, conventional commits as you complete incremental milestones.
+- Make atomic, conventional commits as you complete incremental milestones. **Never** defer a commit once a step is complete.
 - Keep commits small and testable.
 
 ### Completing Work
-Once you make sure you did not accidentally check in any extra files, and your changes look good to you, open a PR with:
+Once you make sure you did not accidentally check in any extra files, and your changes look good to you, **make sure** that all project documentation (e.g., the `README.md` file, anything under `docs/`) reflect your changes. This last step is **very important**, as failure to do this results in documentation rot over time. Once you ensure that documentation is up-to-date, open a PR with:
 1. **Descriptive title**: Conventional commit format (e.g., `feat(auth): add OAuth2 provider support`)
 2. **Body sections**:
    - Summary of changes
    - Testing approach and coverage status
    - Breaking changes (if any)
-3. **Inline comments**: Add review comments on critical or non-obvious code sections using `gh pr comment`.
+3. **Guiding comments**: Add review comments on critical or non-obvious code sections using `gh api` (example below).
 ```bash
 gh pr create --title "feat(scope): description" --body "$(cat <<'EOF'
 ## Summary
@@ -100,19 +101,19 @@ git branch -d feature/descriptive-name
 ### Conflict Resolution
 When your branch conflicts with `main` (or the target branch):
 - Rebase your branch onto the latest `main` (i.e. target branch) before opening or updating a PR.
-- If multiple worktrees have conflicting changes, coordinate via `## Session Notes` in `PROJECT.md` (see below).
+- If multiple worktrees have conflicting changes, coordinate via `Session Notes` in `PROJECT.md` (see below).
 
 ---
 
-## Project Planning & `PROJECT.md` Management
+## Project Planning and Management
 
 ### Creating the Initial Plan
 
-Given the initial description of the project, create a `PROJECT.md` file that summarizes your understanding of the project, its goals, and a detailed step-by-step plan to implement it.
+Given the initial description of the project, create a `PROJECT.md` file (*in the project worktree*) that summarizes your understanding of the project, its goals, and a detailed step-by-step plan to implement it.
 
 Maintain this file with hierarchical check boxes for all non-trivial tasks and/or steps.
 
-If you do not have enough information to create a initial plan, create a preliminary plan and interview me with what you know to fill in the blanks. As you go through the process, when you reach a stage where you feel like you can create a plan with enough details, you may:
+If you do not have enough information to create a initial plan, create a preliminary plan and interview the user with what you know to fill in the blanks. As you go through the process, when you reach a stage where you feel like you can create a plan with enough details, you may:
 - Treat any remaining uncertain areas as work steps (discovery tasks),
 - Add them to the "Status" section as steps,
 - Refine them later during development.
@@ -155,19 +156,19 @@ A few paragraphs describing your understanding of the project, overall project g
 ```
 
 ### Rules
-1. **Never recreate** `PROJECT.md` — update existing content.
-2. **Update immediately** as work progresses — never defer to the end of session. This is **very important** - update it as you go.
+1. **Never recreate** `PROJECT.md` - update existing content.
+2. **Update immediately** as work progresses - never defer to the end of session. This is **very important** - update it as you go.
 3. **Check off steps** with `[x]` the moment they're complete.
 4. **Break down steps** as understanding develops.
 5. **Document decisions** and deviations from the original plan.
-6. **Reflect true state** — `PROJECT.md` **must** always show current project status.
+6. **Reflect true state** - `PROJECT.md` **must** always show current project status.
 7. **Never include** `PROJECT.md` in a PR - it is for your internal use only until project completion.
 
 ### Session Handoff
 When finishing a session or before context becomes stale:
 1. Ensure `PROJECT.md` is fully up-to-date with current progress.
 2. Commit or stash any work-in-progress.
-3. Add a brief summary note under `## Session Notes` in `PROJECT.md`, e.g.:
+3. Add a brief summary note under `Session Notes` in `PROJECT.md`, e.g.:
    ```markdown
    ## Session Notes
    - [2024-01-15] Completed auth module, starting on API integration. Blocked on OAuth config.
@@ -179,11 +180,11 @@ When finishing a session or before context becomes stale:
 
 When starting a new session on a project with existing code:
 
-1. **Read `PROJECT.md` first** — Understand current state, goals, and what's in progress.
-2. **Check `## Session Notes`** — Review context from previous sessions, especially blockers.
-3. **Review recent commits** — Run `git log --oneline -20` to understand recent momentum.
-4. **Understand before modifying** — Read existing code before making changes. Don't "improve" code you don't understand sufficiently.
-5. **Don't restart from scratch** — Build on existing work; refactor incrementally if necessary.
+1. **Read `PROJECT.md` first** - Understand current state, goals, and what's in progress.
+2. **Check `Session Notes`** - Review context from previous sessions, especially blockers.
+3. **Review recent commits** - Run `git log --oneline -20` to understand recent momentum.
+4. **Understand before modifying** - Read existing code before making changes. Don't "improve" code you don't understand sufficiently.
+5. **Don't restart from scratch** - Build on existing work; refactor incrementally if necessary.
 
 If the project has no `PROJECT.md` file, create one by analyzing the codebase and documenting your understanding before making changes.
 
@@ -196,8 +197,8 @@ Pause and ask before proceeding when:
 2. **Security-sensitive choices**; e.g. authentication, authorization, data handling.
 3. **Destructive operations** like deleting data, dropping tables, removing files.
 4. **Significant trade-offs** where multiple valid approaches exist with different implications.
-5. **Scope uncertainty** — unclear whether something is in or out of scope. Is it a goal, or a step towards an existing goal, or a non-goal?
-6. **External integrations** — unclear API contracts or third-party dependencies.
+5. **Scope uncertainty** - unclear whether something is in or out of scope. Is it a goal, or a step towards an existing goal, or a non-goal?
+6. **External integrations** - unclear API contracts or third-party dependencies.
 
 When in doubt, ask. A brief clarification is cheaper than rework. Any clarification resolving your confusion about (1), (4) or (5) **must** end up, in some form, at some appropriate section of the `PROJECT.md` file.
 
@@ -220,10 +221,11 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 6. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (not in comments or docstrings, in code). Iterate, as necessary, to find the best form.
 
 ### Commit Discipline
+- **Always** commit after every step is complete.
 - Run tests, type-checking (when applicable) and any other checks before every commit.
 - Use concise conventional commits: `type(scope): description`
 - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
-- For larger commits, add explanation paragraphs, e.g.:
+- Unless the commit is tiny, add an explanation paragraph, e.g.:
   ```
   feat(parser): add streaming JSON support
 
@@ -374,7 +376,7 @@ pedantic = "warn"
 ## Dependency Policy
 
 When adding new dependencies:
-1. **Prefer stdlib** — Use standard library features over external packages when reasonable.
+1. **Prefer stdlib** - Use standard library features over external packages when reasonable.
 2. **Evaluate before adding**:
    - Maintenance status (recent commits, responsive maintainers)
    - License compatibility with the project (F/OSS licenses are always acceptable unless the project specifies otherwise)
@@ -407,9 +409,9 @@ cargo llvm-cov --fail-under-lines 100
 ```
 
 ### Testing Philosophy
-1. Test infrastructure is milestone zero — nothing ships without it.
+1. Test infrastructure is milestone zero - nothing ships without it.
 2. 100% coverage is the baseline, not the goal.
-3. Tests document behavior — write them as specifications.
+3. Tests document behavior - write them as specifications.
 4. Use `# pragma: no cover` only for genuinely untestable code (OS-specific branches, defensive assertions).
 5. Integration tests complement, not replace, unit tests.
 6. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
@@ -433,9 +435,9 @@ In these cases, add a `# TODO: Add tests before production use` comment. If you 
 
 ### Exception Design
 For languages with exceptions:
-1. **Use domain-specific hierarchies** — Create a base exception for your module (e.g., `AgentException`), then specific subclasses.
-2. **Always chain causes when possible** — Use `raise NewError("message") from original_error` to preserve the context.
-3. **Include actionable context** — Error messages **must** help diagnose the problem.
+1. **Use domain-specific hierarchies** - Create a base exception for your module (e.g., `AgentException`), then specific subclasses.
+2. **Always chain causes when possible** - Use `raise NewError("message") from original_error` to preserve the context.
+3. **Include actionable context** - Error messages **must** help diagnose the problem.
 
 ### Error Message Quality
 Good error messages answer: *What failed? Why? What values were involved? How to fix?*
@@ -465,14 +467,14 @@ if obj.__cause__ is not None:
 
 ## Security Basics
 
-1. **Validate at boundaries** — Sanitize all user input and external API responses at system entry points.
-2. **Never hardcode secrets** — Use environment variables or secret management tools; never commit credentials.
+1. **Validate at boundaries** - Sanitize all user input and external API responses at system entry points.
+2. **Never hardcode secrets** - Use environment variables or secret management tools; never commit credentials.
 3. **Escape output appropriately**:
    - SQL: Use parameterized queries, never string interpolation.
    - HTML: Escape user content to prevent XSS.
    - Shell: Use proper quoting or avoid shell interpolation entirely.
-4. **Principle of least privilege** — Request only necessary permissions; avoid running as root/admin.
-5. **Dependency vigilance** — Check for known vulnerabilities before any release (`uv pip audit`, `cargo audit`, `npm audit`) and act accordingly (e.g. find alternatives, change versions).
+4. **Principle of least privilege** - Request only necessary permissions; avoid running as root/admin.
+5. **Dependency vigilance** - Check for known vulnerabilities before any release (`uv pip audit`, `cargo audit`, `npm audit`) and act accordingly (e.g. find alternatives, change versions).
 
 ---
 
