@@ -220,7 +220,7 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 ### Step Sequence Template
 1. Set up testing infrastructure and CI hooks.
 2. Implement core types/interfaces with tests.
-3. Implement functionality incrementally, tests first.
+3. Implement functionality incrementally, **always with their tests**.
 4. Integration tests for component interactions.
 5. Review your work with respect to performance and computational complexity. Identify and fix bottlenecks or suboptimal algorithms and/or data structures. Iterate, as necessary, to fix.
 6. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (not in comments or docstrings, in code). Iterate, as necessary, to find the best form.
@@ -247,13 +247,15 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 
 #### Toolchain
 - **Package manager**: `uv` (not `pip`, `poetry`, or `pipenv`)
-  - *IMPORTANT*: Activate the project's virtual environment as a first, one-time step in **every session** before you run any Python code:
+  - *IMPORTANT*: After you create your worktree, create a virtual environment for your worktree via `uv` and activate it as a first, one-time step in **every session** before you run any Python code:
   ```bash
+  # Create virtual environment for the worktree and activate:
+  uv venv
   source .venv/bin/activate
   ```
 - **Linting/Formatting**: `ruff` (replaces black, isort, flake8)
 - **Type checking**: `mypy` (strict mode)
-- **Testing**: `pytest` with `pytest-cov`, `pytest-asyncio`
+- **Testing**: `pytest` with `pytest-asyncio`, `pytest-cov` for coverage, `syrupy` for snapshots, and `pytest-examples` for documentation tests
 - **Hooks**: `pre-commit`
 
 **Simple `pyproject.toml` baseline**:
@@ -359,7 +361,7 @@ target("test")
 - **Package manager**: `cargo`
 - **Linting**: `clippy` (pedantic)
 - **Formatting**: `rustfmt`
-- **Testing**: `cargo test` with `cargo-llvm-cov` for coverage
+- **Testing**: `cargo test` with `cargo-tarpaulin` for coverage, `cargo-insta` for snapshots, and the built-in documentation testing (`cargo test --doc`)
 
 **Cargo.toml baseline**:
 ```toml
