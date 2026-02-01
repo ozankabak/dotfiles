@@ -4,8 +4,6 @@ This document contains instructions and guidelines for Claude instances working 
 
 **Override mechanism**: If a project contains its own `CLAUDE.md` file, those project-specific instructions take precedence. When conflicts exist, follow the project-specific instructions.
 
----
-
 ## Sandbox Environment
 
 You operate in a macOS `sandbox-exec` environment with restricted file access:
@@ -16,8 +14,6 @@ You operate in a macOS `sandbox-exec` environment with restricted file access:
 - **Blocked**: Paths outside the above, sensitive files (`.env`, credentials, secrets)
 
 Do not attempt to access files outside these boundaries - commands will fail (often with an error, but may do so silently or hang).
-
----
 
 ## Multi-Instance Workflow (Worktrees & PRs)
 
@@ -49,6 +45,7 @@ cd .worktrees/feature-name
 
 ### During Development
 - Work in your branch, never commit directly to `main`/`master`.
+- Conform to existing coding style and commenting style/language.
 - Make atomic, conventional commits as you complete incremental milestones. **Never** defer a commit once a step is complete.
 - Keep commits small and testable.
 
@@ -62,32 +59,30 @@ Once you are done with this checklist, open a PR with:
 2. **Body sections**:
    - Summary of changes
    - Testing approach and coverage status
+   - Review notes
    - Breaking changes (if any)
 3. **Guiding comments**: Add review comments on critical or non-obvious code sections using `gh api` (example below).
-```bash
-gh pr create --title "feat(scope): description" --body "$(cat <<'EOF'
-## Summary
-- What this PR accomplishes and/or key changes made.
-
-## Testing
-- Testing approach.
-- Coverage status.
-
-## Review Notes
-- Any architectural decisions.
-- Potential impacts on other components.
-- Areas needing careful review, if any.
-- Discussion of performance implications, if any.
-- Comparative analysis with alternative approaches, if relevant.
-
-## Breaking Changes
-- List any breaking changes here, or do not add this section at all. Only add this section if the project CLAUDE.md specifically requires documenting breaking changes.
-EOF
-)"
-
-# Add inline comments for complex sections (only for complex or non-obvious code)
-gh api repos/{owner}/{repo}/pulls/{pr}/comments -f body="Explanation of this section" -f path="src/file.py" -f line=42
-```
+   ```bash
+   gh pr create --title "feat(scope): description" --body "$(cat <<'EOF'
+   ## Summary
+   - What this PR accomplishes and/or key changes made.
+   ## Testing
+   - Testing approach.
+   - Coverage status.
+   ## Review Notes
+   - Any architectural decisions.
+   - Potential impacts on other components.
+   - Areas needing careful review, if any.
+   - Discussion of performance implications, if any.
+   - Comparative analysis with alternative approaches, if relevant.
+   ## Breaking Changes
+   - List any breaking changes here. Do not add this section if there aren't any.
+   - Only add this section if project instructions specifically require documenting breaking changes.
+   EOF
+   )"
+   # Add inline comments for complex sections (only for complex or non-obvious code)
+   gh api repos/{owner}/{repo}/pulls/{pr}/comments -f body="Explanation of this section" -f path="src/file.py" -f line=42
+   ```
 
 ### Handling Review Feedback
 When responding to PR review comments:
@@ -107,8 +102,6 @@ git branch -d feature/descriptive-name
 When your branch conflicts with `main` (or the target branch):
 - Rebase your branch onto the latest `main` (i.e. target branch) before opening or updating a PR.
 - If multiple worktrees have conflicting changes, coordinate via `Session Notes` in `PROJECT.md` (see below).
-
----
 
 ## Project Planning and Management
 
@@ -179,8 +172,6 @@ When finishing a session or before context becomes stale:
    - [2024-01-15] Completed auth module, starting on API integration. Blocked on OAuth config.
    ```
 
----
-
 ## Resuming Work on Existing Projects
 
 When starting a new session on a project with existing code:
@@ -192,8 +183,6 @@ When starting a new session on a project with existing code:
 5. **Don't restart from scratch** - Build on existing work; refactor incrementally if necessary.
 
 If the project has no `PROJECT.md` file, create one by analyzing the codebase and documenting your understanding before making changes.
-
----
 
 ## When to Ask for Clarification
 
@@ -207,15 +196,14 @@ Pause and ask before proceeding when:
 
 When in doubt, ask. A brief clarification is cheaper than rework. Any clarification resolving your confusion about (1), (4) or (5) **must** end up, in some form, at some appropriate section of the `PROJECT.md` file.
 
----
-
 ## Incremental Development Approach
 
 ### Planning Principles
 1. **Testability drives boundaries**: Each step **must** be independently testable.
 2. **Small, atomic steps**: Prefer more smaller steps over fewer large ones.
 3. **Test infrastructure first**: The first milestone is always achieving 100% test coverage infrastructure.
-4. **Always maintain coverage**: Every PR **must** maintain 100% coverage. Use `# pragma: no cover` only when truly necessary or justifiable. For cases that warrant the use of this escape hatch, you **must** document your justification under the `Session Notes` section in the `PROJECT.md` file - AND mention these exemptions when you finish the project.
+4. **Always maintain coverage**: Every PR **must** maintain 100% coverage - plan and design accordingly. Use `# pragma: no cover` only when truly necessary or justifiable. For cases that warrant the use of this escape hatch, you **must** document your justification under the `Session Notes` section in the `PROJECT.md` file - AND mention these exemptions when you finish the project.
+5. **Always keep documentation up-to-date**: Every PR **must** update all relevant documentation - plan accordingly. Documentation **must never** diverge from what is in the codebase.
 
 ### Step Sequence Template
 1. Set up testing infrastructure and CI hooks.
@@ -238,8 +226,6 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
   Uses a state-machine approach to handle partial reads across chunk boundaries.
   ```
 
----
-
 ## Language-Specific Tooling
 
 ### Python
@@ -248,23 +234,43 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 #### Toolchain
 - **Package manager**: `uv` (not `pip`, `poetry`, or `pipenv`)
   - *IMPORTANT*: After you create your worktree, create a virtual environment for your worktree via `uv` and activate it as a first, one-time step in **every session** before you run any Python code:
-  ```bash
-  # Create virtual environment for the worktree and activate:
-  uv venv
-  source .venv/bin/activate
-  ```
+    ```bash
+    # Create virtual environment for the worktree and activate:
+    uv venv
+    source .venv/bin/activate
+    ```
 - **Linting/Formatting**: `ruff` (replaces black, isort, flake8)
 - **Type checking**: `mypy` (strict mode)
-- **Testing**: `pytest` with `pytest-asyncio`, `pytest-cov` for coverage, `syrupy` for snapshots, and `pytest-examples` for documentation tests
+- **Testing**: `pytest` with the following plugins:
+  - `pytest-asyncio` to test async functionality,
+  - `pytest-cov` for coverage,
+  - `syrupy` for snapshots,
+  - `pytest-rerunfailures` for non-deterministic or flaky tests,
+  - `pytest-examples` for documentation tests
 - **Hooks**: `pre-commit`
+- **Documentation**: `mkdocs` with the following plugins:
+  - `mkdocs-material` for Material theme,
+  - `mkdocstrings[python]` for documentation generation,
+  - `markdown-exec` to facilitate testable examples
 
 **Simple `pyproject.toml` baseline**:
 ```toml
 [project]
+name = "myproject"
+version = "0.1.0"
+readme = "README.md"
 requires-python = ">=3.14"
 
 [dependency-groups]
-dev = ["pre-commit", "ruff", "mypy", "pytest", "pytest-cov"]
+dev = ["pre-commit", "ruff", "mypy", "pytest", "pytest-asyncio", "pytest-cov", "syrupy"]
+docs = ["mkdocs", "mkdocs-material", "mkdocstrings[python]"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+sources = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -276,48 +282,128 @@ select = ["E", "F", "I", "D"]
 convention = "google"
 
 [tool.ruff.format]
-quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = 88
 
 [tool.mypy]
 strict = true
+ignore_missing_imports = true
+pretty = true
 
 [tool.coverage.run]
 branch = true
+omit = [
+  "*/tests/*",
+  "*/__pycache__/*",
+  ".venv/*",
+]
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 100 # Enable after initial development; remove during prototyping
+show_missing = true
+skip_empty = true
+precision = 2
+exclude_also = [
+  '^\s+case\s+.*?\s+as\s+_unreachable:\s*$',
+  '^\s+assert_never\(.*?\)\s*$',
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+  "integration: marks tests as integration tests requiring real API calls (deselect with '-m \"not integration\"')",
+]
+addopts = "-v -m \"not integration\""
+testpaths = ["src", "tests"]
 ```
 
 **Simple `.pre-commit-config.yaml` baseline**:
 ```yaml
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.1
+    rev: v0.14.10
     hooks:
+      - id: ruff-format
       - id: ruff
         args: [--fix]
-      - id: ruff-format
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.1
+    rev: v1.19.1
     hooks:
       - id: mypy
-        additional_dependencies: []  # Add type stubs as needed
+        additional_dependencies: ["pytest"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: '\.ambr$'  # Exclude syrupy snapshot files (preserve docstring formatting)
       - id: end-of-file-fixer
       - id: check-yaml
+        name: check-yaml (mkdocs.yml)
+        files: '^mkdocs\.yml$'
+        args: [--unsafe]  # Use PyYAML to allow anchors
+      - id: check-yaml
+        name: check-yaml (general)
+        exclude: '^mkdocs\.yml$'
       - id: check-added-large-files
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: python
+        types: [python]
+        stages: [manual]
+        additional_dependencies: [pytest, pytest-cov]
 ```
 
 Note that the versions above may be out of date; always use the latest stable versions unless the project specifies otherwise.
 
-**Style conventions**:
+**Snapshot testing**:
+- Snapshot files (`.ambr`) are stored in `__snapshots__/` directories co-located with tests
+- Update snapshots with: `uv run pytest --snapshot-update`
+
+**Project-specific automation**:
+
+Add local pre-commit hooks for project-specific automation. For example, to automatically link/update section(s) of the `README.md` file to the project documentation, one can use:
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: update-readme-structure
+        name: update-readme-structure
+        entry: python -m docs.update_readme_structure
+        language: python
+        pass_filenames: false
+        files: ^(src/.*\.py|docs/.*\.py)$  # Only run when relevant files change
+```
+
+This pattern is useful for:
+- Keeping generated files in sync
+- Running project-specific validation
+- Ensuring documentation matches code
+
+#### Style Conventions
 - Line length: 100 characters
 - Quotes: double quotes (`"string"`)
 - Docstrings: Google style, always present on public APIs
-- Type hints: Complete coverage, use modern syntax (`X | None` not `Optional[X]`)
+- Type hints: Complete coverage, use modern syntax:
+  - Use `X | None`, not `Optional[X]`
+  - Prefer inline generic type variables to explicit definitions when possible
+  - Use `Self` (from `typing`) for methods returning the same type
+  - Use type alias syntax (PEP 695) when appropriate:
+    ```python
+    type JsonValue[T = None | bool | int | float | str] = (
+        T | Sequence[JsonValue[T]] | Mapping[str, JsonValue[T]]
+    )
+    ```
+- Use `Protocol` classes for structural typing when you need an interface without inheritance:
+  - Use `@runtime_checkable` if `isinstance` checks are necessary
+  - Protocol methods use `...` (ellipsis) as body, with `# pragma: no cover`
+  - Prefer protocols over ABCs when there is no implementation sharing
+- Use pattern matching with exhaustiveness checks (i.e. `case _ as _unreachable: assert_never(...)`)
 - Imports: stdlib → third-party → relative (enforced by ruff `I`)
 - Modules: Define `__all__` explicitly
 - Naming: `snake_case` functions, `PascalCase` classes, `UPPER_SNAKE_CASE` constants, `_private` prefix
@@ -338,7 +424,8 @@ set_policy("build.c++.modules", true)
 
 target("lib")
     set_kind("static")
-    add_files("src/*.cpp", "modules/*.cppm")
+    add_files("src/*.cpp")
+    add_files("modules/*.cppm", {public = true})
 
 target("test")
     set_kind("binary")
@@ -346,39 +433,83 @@ target("test")
     add_files("test/*.cpp")
 ```
 
-**Style conventions**:
+#### Style Conventions
 - Use zero-cost abstractions where applicable. For example, avoid `std::function` when there is an alternative that does not increase the complexity significantly.
-- CRTP for static polymorphism (avoid virtual functions where possible)
+- Avoid virtual functions via CRTP to use static polymorphism when possible *and* the resulting complications in type signatures only affect a small subset of the codebase.
 - C++ concepts for template constraints
 - `std::optional` for nullable returns
 - `snake_case` methods, `PascalCase` classes, `_private` prefix
 - Modules (`.cppm`) for clean interfaces
 
+#### Usage Notes
+
+On macOS, the default `clang` does not support C++ modules yet. Use `xmake f --toolchain=gcc-15` to explicitly select the GCC toolchain.
+
 ### Rust
-**Follow Apache DataFusion conventions** (PMC-level standards).
+**Always use the latest stable Rust version** (currently 1.93+). Unless these universal guidelines or project-specific instructions specify otherwise, **follow Apache DataFusion conventions** (PMC-level standards).
 
 #### Toolchain
 - **Package manager**: `cargo`
 - **Linting**: `clippy` (pedantic)
 - **Formatting**: `rustfmt`
-- **Testing**: `cargo test` with `cargo-tarpaulin` for coverage, `cargo-insta` for snapshots, and the built-in documentation testing (`cargo test --doc`)
+- **Testing**: `cargo test` with:
+  - `cargo-tarpaulin` for coverage,
+  - `cargo-insta` for snapshots,
+  - `cargo test --doc` for documentation tests
 
 **Cargo.toml baseline**:
 ```toml
-[lints.rust]
+[workspace]
+resolver = "3"  # Necessary for edition 2024
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.93"
+license = "LicenseRef-Proprietary" # Use appropriate license here
+
+[workspace.dependencies]
+thiserror = "2"
+
+[workspace.lints.rust]
 unsafe_code = "deny"
 
-[lints.clippy]
-pedantic = "warn"
+[workspace.lints.clippy]
+large_futures = "warn"
+used_underscore_binding = "warn"
+or_fun_call = "warn"
+uninlined_format_args = "warn"
+inefficient_to_string = "warn"
+needless_pass_by_value = "warn"
+allow_attributes = "warn"
+
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true
 ```
 
-**Style conventions**:
+If there are member crates, use the following baseline:
+```toml
+[package]
+name = "mylib"
+version = "0.1.0"
+edition = { workspace = true }
+license = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+```
+
+#### Style Conventions
 - Follow Rust API guidelines
 - Comprehensive error types with `thiserror`
 - Property-based testing with `proptest` where applicable
 - Documentation tests for public APIs
-
----
 
 ## Dependency Policy
 
@@ -391,8 +522,6 @@ When adding new dependencies:
 3. **Version pinning**:
    - During early development, before the first public release: Use the latest versions unless the project specifies otherwise. In case of conflicts or instability, you may use bounds if necessary.
    - After first release: Pin exact versions in applications, allow ranges in libraries.
-
----
 
 ## Code Quality Standards
 
@@ -420,10 +549,16 @@ cargo llvm-cov --fail-under-lines 100
 2. 100% coverage is the baseline, not the goal.
 3. Tests document behavior - write them as specifications.
 4. Use `# pragma: no cover` only for genuinely untestable code (OS-specific branches, defensive assertions).
-5. Integration tests complement, not replace, unit tests.
-6. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
+5. **Always** expect full contents of a variable unless it is dynamic. Use snapshotting for:
+   - Serialized data structures
+   - Error message formatting
+   - Complex JSON schemas or API responses
+   - Anything where the expected output is large and change-tracking is valuable
+6. Integration tests complement, not replace, unit tests.
+7. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
+8. Think of documentation examples as minimal E2E tests (and write them as such). Unless there is strong reason as to otherwise, they **must** be executable and run as part of documentation tests.
 
-**When can you defer tests?**:
+**When can you defer tests?**
 - For exploratory prototypes or spikes - **must** be clearly marked as such.
 - Proof-of-concept code that will be rewritten.
 - Scripts intended for one-time use.
@@ -435,8 +570,6 @@ In these cases, add a `# TODO: Add tests before production use` comment. If you 
 2. **Succinct over verbose**: Three clear lines beat a premature abstraction.
 3. **No over-engineering**: Solve the current problem, not hypothetical futures.
 4. **Delete unused code**: No backwards-compatibility shims for removed features.
-
----
 
 ## Error Handling
 
@@ -470,8 +603,6 @@ if obj.__cause__ is not None:
     result["caused_by"] = serialize_exception(obj.__cause__)
 ```
 
----
-
 ## Security Basics
 
 1. **Validate at boundaries** - Sanitize all user input and external API responses at system entry points.
@@ -482,8 +613,6 @@ if obj.__cause__ is not None:
    - Shell: Use proper quoting or avoid shell interpolation entirely.
 4. **Principle of least privilege** - Request only necessary permissions; avoid running as root/admin.
 5. **Dependency vigilance** - Check for known vulnerabilities before any release (`uv pip audit`, `cargo audit`, `npm audit`) and act accordingly (e.g. find alternatives, change versions).
-
----
 
 ## Performance Mindset
 
@@ -499,8 +628,6 @@ Every implementation plan must end with a performance review step:
    - Unnecessary copying of large structures.
 
 Fix issues found before marking work complete.
-
----
 
 ## Quick Reference
 
