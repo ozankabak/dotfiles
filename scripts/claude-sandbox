@@ -49,6 +49,8 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
 (allow file-read*
     ;; Git configuration (for commits)
     (subpath (string-append (param "HOME_DIR") "/.config/git"))
+    ;; Missing from upstream - Rust toolchain configuration
+    (subpath (string-append (param "HOME_DIR") "/.rustup"))
     ;; Missing from upstream - GitHub CLI configuration
     (subpath (string-append (param "HOME_DIR") "/.config/gh"))
     (literal (string-append (param "HOME_DIR") "/.gitconfig"))
@@ -131,6 +133,9 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
 
     ;; Gemini configuraiton
     (subpath (string-append (param "HOME_DIR") "/.gemini"))
+
+    ;; Missing from upstream - allow read/write to Rust cargo files
+    (subpath (string-append (param "HOME_DIR") "/.cargo"))
 
     ;; Standard I/O devices
     (literal "/dev/stdout")
