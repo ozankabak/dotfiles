@@ -8,6 +8,9 @@
   "sandbox": {
     "enabled": false
   },
+  "enabledPlugins": {
+    "clangd-lsp@claude-plugins-official": true
+  },
   "permissions": {
     "allow": [
       "Read(./**)",
