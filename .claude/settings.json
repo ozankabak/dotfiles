@@ -11,6 +11,10 @@
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
   "permissions": {
     "allow": [
       "Read(./**)",
