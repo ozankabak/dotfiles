@@ -474,6 +474,7 @@ thiserror = "2"
 
 [workspace.lints.rust]
 unsafe_code = "deny"
+unused_qualifications = "deny"
 
 [workspace.lints.clippy]
 large_futures = "warn"
@@ -629,16 +630,128 @@ Every implementation plan must end with a performance review step:
 
 Fix issues found before marking work complete.
 
-## Quick Reference
+## Agent Workflow Checklist
 
-| Task | Command |
-|------|---------|
-| Create worktree | `git worktree add .worktrees/name -b branch-name` |
-| Run Python tests | `uv run pytest --cov` |
-| Run Python checks | `uv run ruff check . && uv run mypy .` |
-| Build C++ | `xmake build` |
-| Run C++ tests | `xmake run test` |
-| Run Rust checks | `cargo clippy && cargo test` |
-| Create PR | `gh pr create --title "type: desc" --body "..."` |
-| Add PR comment | `gh api repos/OWNER/REPO/pulls/N/comments -f ...` |
+### Phase 1A: New Project Setup
+
+Use this when starting a brand new project from scratch.
+
+- [ ] **Create worktree**:
+  ```bash
+  mkdir -p .worktrees
+  git worktree add .worktrees/project-name -b feature/initial-implementation
+  cd .worktrees/project-name
+  ```
+
+- [ ] **Set up `.gitignore`** with language-specific patterns:
+  - Python: `.worktrees/`, `.venv/`, `__pycache__/`, `*.pyc`, `.coverage`, `htmlcov/`, `.pytest_cache/`, `PROJECT.md`
+  - Rust: `.worktrees/`, `target/`, `PROJECT.md`
+  - C++: `.worktrees/`, `build/`, `.xmake/`, `PROJECT.md`
+
+- [ ] **Create initial `PROJECT.md`** with preliminary understanding (see structure in [Project Planning and Management](#project-planning-and-management))
+
+- [ ] **Clarify requirements** if necessary (see [When to Ask for Clarification](#when-to-ask-for-clarification) section)
+
+- [ ] **Create project structure and config files**:
+  - Python: `pyproject.toml`, `src/pkgname/__init__.py`, `tests/`, `README.md`
+  - Rust: `Cargo.toml`, `crates/*/src/lib.rs`
+  - C++: `xmake.lua`, `src/`, `modules/`, `test/`
+
+- [ ] **Set up environment**:
+  - Python: `uv venv && source .venv/bin/activate && uv sync --group dev`
+  - Rust: `cargo build`
+  - C++: `xmake f --toolchain=gcc-15 && xmake build`
+
+- [ ] **Set up pre-commit hooks** (if applicable):
+  ```bash
+  uv run pre-commit install
+  ```
+
+- [ ] **Initial commit**:
+  ```bash
+  git add -A && git commit -m "chore: initial project setup"
+  ```
+
+- [ ] **Refine `PROJECT.md`** with detailed implementation plan
+
+### Phase 1B: Resume Existing Project
+
+Use this when continuing work on an existing project.
+
+- [ ] **Navigate to worktree**: `cd .worktrees/project-name`
+
+- [ ] **Activate environment**:
+  - Python: `source .venv/bin/activate`
+
+- [ ] **Read `PROJECT.md`** - understand current state, goals, what's in progress
+
+- [ ] **Check session notes** - review blockers, context from previous sessions
+
+- [ ] **Review recent commits**: `git log --oneline -10`
+
+### Phase 2: Development Loop
+
+For each task:
+
+- [ ] **Mark task in-progress** in `PROJECT.md`
+
+- [ ] **Implement** the change (with tests)
+
+- [ ] **Run checks**:
+  - Python:
+    ```bash
+    uv run ruff format . && uv run ruff check --fix .
+    uv run mypy .
+    uv run pytest --cov
+    ```
+  - Rust:
+    ```bash
+    cargo fmt && cargo clippy -- -D warnings && cargo test
+    ```
+  - C++:
+    ```bash
+    xmake build && xmake run test
+    ```
+
+- [ ] **Commit** with conventional message:
+  ```bash
+  git add -A && git commit -m "type(scope): description"
+  ```
+
+- [ ] **Mark as complete** in `PROJECT.md`
+
+### Phase 3: Review
+
+Before finalizing:
+
+- [ ] **Performance review** (see [Performance Mindset](#performance-mindset))
+
+- [ ] **Idiomatic code review** (see [Code Style Philosophy](#code-style-philosophy))
+
+- [ ] **Security review** if applicable (see [Security Basics](#security-basics))
+
+- [ ] **Update documentation** - Ensure `README.md`, `docs/`, docstrings reflect current state
+
+- [ ] **Verify clean state** - Ensure no unintended files and/or secrets are in the changeset
+
+### Phase 4: PR & Cleanup
+
+- [ ] **Push branch** (if remote exists):
+  ```bash
+  git push -u origin type/descriptive-name
+  ```
+
+- [ ] **Create PR** (see [Completing Work](#completing-work) for template and inline comments)
+
+- [ ] **Update `PROJECT.md`** Session Notes with summary
+
+- [ ] **After merge**, clean up:
+  ```bash
+  git worktree remove .worktrees/task-name
+  git branch -d type/descriptive-name
+  ```
+
+### Phase 5: Session Handoff
+
+If ending session before project completion, go through the steps in [Session Handoff](#session-handoff).
 
