@@ -244,6 +244,7 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 - **Testing**: `pytest` with the following plugins:
   - `pytest-asyncio` to test async functionality,
   - `pytest-cov` for coverage,
+  - `pytest-xdist` for parallel test execution,
   - `syrupy` for snapshots,
   - `pytest-rerunfailures` for non-deterministic or flaky tests,
   - `pytest-examples` for documentation tests
@@ -262,7 +263,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 
 [dependency-groups]
-dev = ["pre-commit", "ruff", "mypy", "pytest", "pytest-asyncio", "pytest-cov", "syrupy"]
+dev = ["pre-commit", "ruff", "mypy", "pytest", "pytest-asyncio", "pytest-cov", "pytest-xdist", "syrupy"]
 docs = ["mkdocs", "mkdocs-material", "mkdocstrings[python]"]
 
 [build-system]
@@ -316,7 +317,7 @@ asyncio_mode = "auto"
 markers = [
   "integration: marks tests as integration tests requiring real API calls (deselect with '-m \"not integration\"')",
 ]
-addopts = "-v -m \"not integration\""
+addopts = "-v -n auto -m \"not integration\""
 testpaths = ["src", "tests"]
 ```
 
@@ -532,7 +533,7 @@ When adding new dependencies:
 uv run ruff check --fix .
 uv run ruff format .
 uv run mypy .
-uv run pytest --cov --cov-fail-under=100
+uv run pytest -n auto --cov --cov-fail-under=100
 
 # C++
 xmake build
@@ -558,6 +559,11 @@ cargo llvm-cov --fail-under-lines 100
 6. Integration tests complement, not replace, unit tests.
 7. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
 8. Documentation examples are tests - see [Documentation Standards](#documentation-standards) for full guidelines.
+9. **Parallel test execution**: **Always** run tests in parallel. Design tests for isolation:
+   - Tests **must not** share mutable state (files, databases, environment variables).
+   - Use fixtures with appropriate scope (e.g., use function-scoping for parallel safety).
+   - Python: Use `pytest-xdist` with `-n auto`.
+   - Rust: `cargo test` runs in parallel by default; use `--test-threads=1` when serial execution is needed.
 
 **When can you defer tests?**
 - For exploratory prototypes or spikes - **must** be clearly marked as such.
@@ -718,7 +724,7 @@ For each task:
     ```bash
     uv run ruff format . && uv run ruff check --fix .
     uv run mypy .
-    uv run pytest --cov
+    uv run pytest -n auto --cov
     ```
   - Rust:
     ```bash
