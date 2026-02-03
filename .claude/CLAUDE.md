@@ -557,7 +557,7 @@ cargo llvm-cov --fail-under-lines 100
    - Anything where the expected output is large and change-tracking is valuable
 6. Integration tests complement, not replace, unit tests.
 7. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
-8. Think of documentation examples as minimal E2E tests (and write them as such). Unless there is strong reason as to otherwise, they **must** be executable and run as part of documentation tests.
+8. Documentation examples are tests - see [Documentation Standards](#documentation-standards) for full guidelines.
 
 **When can you defer tests?**
 - For exploratory prototypes or spikes - **must** be clearly marked as such.
@@ -571,6 +571,22 @@ In these cases, add a `# TODO: Add tests before production use` comment. If you 
 2. **Succinct over verbose**: Three clear lines beat a premature abstraction.
 3. **No over-engineering**: Solve the current problem, not hypothetical futures.
 4. **Delete unused code**: No backwards-compatibility shims for removed features.
+
+## Documentation Standards
+
+### Principles
+1. **Executable examples**: All code examples in documentation **must** be testable and pass linting. Use `pytest-examples` (Python), `cargo test --doc` (Rust), or equivalent tooling. Examples that don't run will rot.
+2. **DRY for repeated content**: Use includes, macros, or templating (e.g., mkdocs snippets, markdown partials) for diagrams, code blocks, or explanations that appear in multiple places. Single source of truth.
+3. **Generate, don't hardcode**: Sample outputs, CLI help text, schema examples, and similar artifacts should be generated at build/test time - no hardcoding. Hardcoded outputs drift from reality.
+4. **Complement, don't duplicate API docs**: Do not repeat what `mkdocstrings`, `rustdoc`, or similar tools already generate. Prose documentation should explain concepts, patterns, usage guidance, and "why" - let the generated API reference cover signatures, parameters, and "what". Fixed prose describing API details will go stale.
+
+### What Belongs Where
+| Content Type | Location | Why |
+|--------------|----------|-----|
+| Function signatures, parameters, return types | Generated API docs (docstrings) | Single source of truth from code |
+| Conceptual explanations, tutorials | Prose documentation (`docs/`) | Provides context and learning path |
+| Code examples | Both, but **must** be testable | Docstrings for API context, tutorials for workflows |
+| Diagrams, architecture | Prose documentation | Visual aids for understanding |
 
 ## Error Handling
 
