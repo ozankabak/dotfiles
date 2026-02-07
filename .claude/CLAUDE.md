@@ -590,6 +590,31 @@ In these cases, add a `# TODO: Add tests before production use` comment. If you 
 5. **Use tooling when available**: Prefer mechanical refactoring tools (e.g., renaming, method extraction, inlining) over manual edits when possible - they are less error-prone.
 6. **Verify at each step**: Run the full test suite after each atomic refactoring step, not just at the end. A failing intermediate state indicates the step may have been too large.
 
+## Debugging Guidelines
+
+### Methodology
+1. **Reproduce first**: Never attempt to fix a bug you cannot reliably reproduce. If it's intermittent, invest time in finding reproduction conditions before proceeding.
+2. **Understand before fixing**: Diagnose the root cause, don't guess. A fix you don't understand is a fix that may not work or may break something else.
+3. **Change one thing at a time**: When testing hypotheses, make a single change and verify. Multiple simultaneous changes obscure which one had an effect.
+4. **Bisect systematically**: Use `git bisect` for regressions or binary search through code paths when necessary. Narrow the problem space by half each step.
+5. **Write a failing test first**: Before fixing, write a test that reproduces the bug (if not already present). This confirms your understanding and prevents regressions.
+6. **Collect reusable debug scripts**: Formalize repeated investigation commands into scripts or test cases. Especially valuable for non-deterministic systems (e.g., LLMs) where multi-run data collection exposes patterns.
+
+### Pitfalls
+1. **Confirmation bias**: Actively seek evidence that disproves your theory, not just evidence that supports it.
+2. **Assuming locality**: The bug may not be where the error manifests. Trace data flow backward from the failure point.
+3. **Stale assumptions**: Re-verify "known working" code if running out of hypotheses. Bugs may hide in code you trust implicitly.
+
+### Practical Techniques
+1. **Read the error message**: Carefully. Fully. Including stack traces. The answer is often there.
+2. **Minimize the reproduction**: Reduce to the smallest case that exhibits the bug. This often reveals the cause directly.
+3. **Explain the problem aloud**: Rubber duck debugging works. Articulating the problem forces structured thinking.
+
+### Housekeeping
+1. **Remove debug artifacts**: No committed print statements, commented-out code, or debug flags. You can use conditional logging if persistence is necessary.
+2. **Check for siblings**: After fixing a bug, scan for similar patterns elsewhere in the codebase.
+3. **Document non-obvious fixes**: If the fix is subtle or counterintuitive, add a comment explaining why it's necessary.
+
 ## Documentation Standards
 
 ### Principles
