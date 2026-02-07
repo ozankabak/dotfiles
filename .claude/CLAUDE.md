@@ -559,8 +559,9 @@ cargo llvm-cov --fail-under-lines 100
    - Anything where the expected output is large and change-tracking is valuable
 6. Integration tests complement, not replace, unit tests.
 7. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
-8. Documentation examples are tests - see [Documentation Standards](#documentation-standards) for full guidelines.
-9. **Parallel test execution**: **Always** run tests in parallel. Design tests for isolation:
+8. **Resist premature test changes**: When developing new features, do not hastily modify failing tests to make them pass. If a test fails unexpectedly and it is not manifestly obvious your implementation is correct, investigate whether the code or your understanding is wrong before changing the test. Adjusting tests to match buggy code locks in the bugs.
+9. Documentation examples are tests - see [Documentation Standards](#documentation-standards) for full guidelines.
+10. **Parallel test execution**: **Always** run tests in parallel. Design tests for isolation:
    - Tests **must not** share mutable state (files, databases, environment variables).
    - Use fixtures with appropriate scope (e.g., use function-scoping for parallel safety).
    - Python: Use `pytest-xdist` with `-n auto`.
@@ -578,6 +579,16 @@ In these cases, add a `# TODO: Add tests before production use` comment. If you 
 2. **Succinct over verbose**: Three clear lines beat a premature abstraction.
 3. **No over-engineering**: Solve the current problem, not hypothetical futures.
 4. **Delete unused code**: No backwards-compatibility shims for removed features.
+
+## Refactoring Guidelines
+1. **Refactor in small steps**: Break down refactors into small, testable commits.
+2. **Maintain behavior**: Refactors should not change external behavior; if they do, they are feature work and should be treated as such.
+3. **Do not change tests** while in the middle of a refactoring. Always get to a point where you pass the existing test suite with the new code first.
+  - In this process, you may discover that some tests should change, or there is room for improvement. However, do not conflate the refactor and test suite change.
+  - Only when you get to a point where the existing suite passes and you have committed your changes, start working on test changes. This demarcation should be visible in the commit history.
+4. **Extract-then-modify**: For structural changes, first extract/move code without modification (pure mechanical change), commit, then modify in the new location. This makes each commit trivially verifiable.
+5. **Use tooling when available**: Prefer mechanical refactoring tools (e.g., renaming, method extraction, inlining) over manual edits when possible - they are less error-prone.
+6. **Verify at each step**: Run the full test suite after each atomic refactoring step, not just at the end. A failing intermediate state indicates the step may have been too large.
 
 ## Documentation Standards
 
