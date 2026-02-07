@@ -216,6 +216,7 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 ### Commit Discipline
 - **Always** commit after every step is complete.
 - Run tests, type-checking (when applicable) and any other checks before every commit.
+- If the situation calls for amending the last commit (which should be rare, and often happens only in interactive sessions), always check whether amending will create a divergence with upstream. If so, **always** create a new commit instead of amending.
 - Use concise conventional commits: `type(scope): description`
 - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
 - Unless the commit is tiny, add an explanation paragraph, e.g.:
