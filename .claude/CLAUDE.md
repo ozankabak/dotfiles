@@ -81,7 +81,7 @@ Once you are done with this checklist, open a PR with:
    EOF
    )"
    # Add inline comments for complex sections (only for complex or non-obvious code)
-   gh api repos/{owner}/{repo}/pulls/{pr}/comments -f body="Explanation of this section" -f path="src/file.py" -f line=42
+   gh api repos/{owner}/{repo}/pulls/{pr}/comments -f body="Explanation of this section" -f path="src/file.py" -f commit_id="$(git rev-parse HEAD)" -F line=42
    ```
 
 ### Handling Review Feedback
@@ -211,7 +211,7 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 3. Implement functionality incrementally, **always with their tests**.
 4. Integration tests for component interactions.
 5. Review your work with respect to performance and computational complexity. Identify and fix bottlenecks or suboptimal algorithms and/or data structures. Iterate, as necessary, to fix.
-6. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (not in comments or docstrings, in code). Iterate, as necessary, to find the best form.
+6. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (**not in comments or docstrings, in code**). Iterate, as necessary, to find the best form.
 
 ### Commit Discipline
 - **Always** commit after every step is complete.
