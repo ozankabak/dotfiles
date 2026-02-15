@@ -551,21 +551,23 @@ cargo llvm-cov --fail-under-lines 100
 1. Test infrastructure is milestone zero - nothing ships without it.
 2. 100% coverage is the baseline, not the goal.
 3. Tests document behavior - write them as specifications.
-4. Use `# pragma: no cover` only for genuinely untestable code (OS-specific branches, defensive assertions).
-5. **Always** expect full contents of a variable unless it is dynamic. Use snapshotting for:
+4. **Name tests by what they verify, not how**: Test names and docstrings/comments should describe the behavior or scenario under test, not implementation details. Prefer `test_login_rejects_wrong_password` over `test_login_calls_bcrypt_verify`.
+5. Use `# pragma: no cover` only for genuinely untestable code (OS-specific branches, defensive assertions).
+6. **Always** expect full contents of a variable unless it is dynamic. Use snapshotting for:
    - Serialized data structures
    - Error message formatting
    - Complex JSON schemas or API responses
    - Anything where the expected output is large and change-tracking is valuable
-6. Integration tests complement, not replace, unit tests.
-7. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
-8. **Resist premature test changes**: When developing new features, do not hastily modify failing tests to make them pass. If a test fails unexpectedly and it is not manifestly obvious your implementation is correct, investigate whether the code or your understanding is wrong before changing the test. Adjusting tests to match buggy code locks in the bugs.
-9. Documentation examples are tests - see [Documentation Standards](#documentation-standards) for full guidelines.
-10. **Parallel test execution**: **Always** run tests in parallel. Design tests for isolation:
-   - Tests **must not** share mutable state (files, databases, environment variables).
-   - Use fixtures with appropriate scope (e.g., use function-scoping for parallel safety).
-   - Python: Use `pytest-xdist` with `-n auto`.
-   - Rust: `cargo test` runs in parallel by default; use `--test-threads=1` when serial execution is needed.
+7. Integration tests complement, not replace, unit tests.
+8. Bugfixes, refactors and API changes often create testing gaps or affect/invalidate existing tests. When working on such tasks, you **must** diligently scan for all relevant tests and update them accordingly AND add any missing tests to maintain 100% coverage.
+9. **Resist premature test changes**: When developing new features, do not hastily modify failing tests to make them pass. If a test fails unexpectedly and it is not manifestly obvious your implementation is correct, investigate whether the code or your understanding is wrong before changing the test. Adjusting tests to match buggy code locks in the bugs.
+10. Documentation examples are tests - see [Documentation Standards](#documentation-standards) for full guidelines.
+11. **Parallel test execution**: **Always** run tests in parallel. Design tests for isolation:
+    - Tests **must not** share mutable state (files, databases, environment variables).
+    - Use fixtures with appropriate scope (e.g., use function-scoping for parallel safety).
+    - Python: Use `pytest-xdist` with `-n auto`.
+    - Rust: `cargo test` runs in parallel by default; use `--test-threads=1` when serial execution is needed.
+12. **Test ordering**: Within a test file, arrange tests from happy paths to error cases, and from simple to complex. This makes test files readable as a progressive specification.
 
 **When can you defer tests?**
 - For exploratory prototypes or spikes - **must** be clearly marked as such.
