@@ -52,7 +52,7 @@ cd .worktrees/feature-name
 ### Completing Work
 Follow this checklist when completing your work with a PR:
 - **Make sure** you did not accidentally check in any extra files (like any temporary files or the project file `PROJECT.md`).
-- **Make sure** you did the performance/computational complexity *and* idiomatic programming/succinctness self-reviews (more on these below), and the final state of the code looks good to you.
+- **Make sure** you did the performance/computational complexity, resource management, *and* idiomatic programming/succinctness self-reviews (more on these below), and the final state of the code looks good to you.
 - **Make sure** that all project documentation (e.g., the `README.md` file, anything under `docs/`) reflect your changes. This step is **very important**, as failure to do this results in documentation rot over time.
 Once you are done with this checklist, open a PR with:
 1. **Descriptive title**: Conventional commit format (e.g., `feat(auth): add OAuth2 provider support`)
@@ -211,7 +211,8 @@ When in doubt, ask. A brief clarification is cheaper than rework. Any clarificat
 3. Implement functionality incrementally, **always with their tests**.
 4. Integration tests for component interactions.
 5. Review your work with respect to performance and computational complexity. Identify and fix bottlenecks or suboptimal algorithms and/or data structures. Iterate, as necessary, to fix.
-6. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (**not in comments or docstrings, in code**). Iterate, as necessary, to find the best form.
+6. Review your work with respect to resource management. Verify idiomatic acquisition/release for all resources using the appropriate strategy from the [priority hierarchy](#priority-hierarchy). Check for leaks, missing cleanup on error paths, and unnecessary shared ownership.
+7. **Final step (always)**: Review your work with respect to idiomatic programming and succinctness (**not in comments or docstrings, in code**). Iterate, as necessary, to find the best form.
 
 ### Commit Discipline
 - **Always** commit after every step is complete.
@@ -665,6 +666,34 @@ if obj.__cause__ is not None:
     result["caused_by"] = serialize_exception(obj.__cause__)
 ```
 
+## Resource Management
+
+### Priority Hierarchy
+Use the highest-applicable strategy from this list:
+
+1. **RAII / scope-bound resource management**: Tie resource lifetimes to object lifetimes so that acquisition happens in the constructor (or entry) and release happens in the destructor (or exit). This is the default strategy for files, locks, network connections, memory, database transactions, and any other resource with acquire/release semantics.
+   - **C++**: Destructors, `std::lock_guard`, `std::scoped_lock`, `std::fstream`
+   - **Python**: Context managers (`with` statements) - the idiomatic RAII equivalent; `contextlib.ExitStack` for managing multiple or conditional resources
+   - **Rust**: Ownership + `Drop` trait (automatic and inherent to the language)
+2. **Zero-cost ownership abstractions**: When a resource must outlive a single scope, use compile time enforcement on ownership for single owner objects, which doesn't incur runtime cost:
+   - **C++**: `std::unique_ptr` (compiles to identical code as a raw pointer + `delete` in optimized builds - same size, no reference counting, no control block), move semantics for ownership transfer
+   - **Rust**: Ownership and borrowing are inherently zero-cost; `Box<T>` for heap allocation with deterministic deallocation
+3. **Shared ownership with runtime cost**: When there is a genuine reason to share ownership, and no compile time enforcement is possible, use idiomatic lightweight shared-ownership abstractions:
+   - **C++**: `std::shared_ptr` / `std::weak_ptr` (not zero-cost: atomic reference counting + heap-allocated control block)
+   - **Rust**: `Arc<T>` / `Weak<T>` for shared ownership across threads; `Rc<T>` / `Weak<T>` for single-threaded contexts
+4. **Idiomatic language facilities for non-deterministic lifetimes**: For long-living objects where none of the above apply (e.g., callback-registered objects, caches, observer patterns):
+   - **Python**: `weakref.finalize` for guaranteed cleanup; `weakref.ref` for breaking reference cycles; `atexit.register` for process-level teardown. **Never rely on `__del__`** - it has no timing guarantees and may not run at all during interpreter shutdown.
+   - **C++**: Custom deleters on smart pointers; cleanup callbacks registered with a lifecycle manager
+
+### Rules
+1. **Never use manual resource management when an abstraction exists**: No raw `new`/`delete` in C++ (use `std::make_unique` / `std::make_shared`), no bare `close()` without a `with` block in Python, no `unsafe` for resource management in Rust unless absolutely necessary.
+2. **Scope guards for C-style APIs**: When wrapping APIs that lack RAII (e.g., C libraries), use scope guards (`std::scope_exit` in C++26, or a lambda-based guard) or write a thin RAII wrapper.
+3. **Error safety**: Resources **must** be released on error paths. This is the primary reason to prefer RAII/scope-based patterns over manual cleanup:
+   - C++: Destructors run during stack unwinding; ensure they are `noexcept`.
+   - Python: `with` blocks guarantee `__exit__` runs; use `finally` only when context managers are impractical.
+   - Rust: `Drop` runs automatically on all exit paths.
+4. **Acquire in consistent order**: When acquiring multiple resources (especially locks), always acquire in a consistent global order to prevent deadlocks.
+
 ## Security Basics
 
 1. **Validate at boundaries** - Sanitize all user input and external API responses at system entry points.
@@ -786,6 +815,8 @@ For each task:
 Before finalizing:
 
 - [ ] **Performance review** (see [Performance Mindset](#performance-mindset))
+
+- [ ] **Resource management review** (see [Resource Management](#resource-management))
 
 - [ ] **Idiomatic code review** (see [Code Style Philosophy](#code-style-philosophy))
 
