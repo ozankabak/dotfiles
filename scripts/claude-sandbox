@@ -67,6 +67,9 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
 ;; Allow signals to all children
 (allow signal (target same-sandbox))
 (allow mach-priv-task-port (target same-sandbox))
+;; Missing from upstream - POSIX IPC for multi-process execution (pytest-xdist, multiprocessing)
+(allow ipc-posix-shm)
+(allow ipc-posix-sem)
 
 ;; User preferences - from https://github.com/anthropic-experimental/sandbox-runtime/blob/1bafa66a2c3ebc52569fc0c1a868e85e778f66a0/src/sandbox/macos-sandbox-utils.ts#L200
 ;; (allow user-preference-read) ;; doesn't seem to be required by claude-code
@@ -102,6 +105,12 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
     (sysctl-name "kern.secure_kernel")
     (sysctl-name "kern.version")
 )
+;; Missing from upstream - blanket sysctl-read permission for Python multiprocessing
+;; support. Python's sysconf() for POSIX.1b values (e.g. SC_SEM_NSEMS_MAX) uses
+;; CTL_P1003_1B numeric MIBs that have no registered names in the kernel's sysctl
+;; namespace, and sandbox-exec does not resolve them for sysctl-name matching. This
+;; subsumes the upstream per-name allowlist above, but we keep it for future constraining.
+(allow sysctl-read)
 
 ;; Allow file writes to specific paths only
 ;; Note: file-write* does NOT include file-write-create, so we need both
