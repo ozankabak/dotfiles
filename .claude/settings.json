@@ -5,6 +5,7 @@
   },
   "model": "opus[1m]",
   "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
   "includeCoAuthoredBy": false,
   "sandbox": {
     "enabled": false
@@ -188,6 +189,7 @@
 
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
+      "Bash(git push:*)",
       "Bash(git clone:*)",
       "Bash(git submodule update:*)",
       "Bash(git lfs pull:*)",
@@ -364,8 +366,6 @@
       "Bash(d2:*)"
     ],
     "ask": [
-      "Bash(git push:*)",
-
       "Bash(docker:*)",
       "Bash(docker-compose:*)",
       "Bash(podman:*)",
