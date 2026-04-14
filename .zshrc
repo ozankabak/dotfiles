@@ -76,7 +76,7 @@ if [ -f ~/.fzf.zsh ]; then
 fi
 
 # Use strict sandboxing for Claude:
-alias claude="claude-sandbox claude"
+alias claude='(unset ANTHROPIC_API_KEY; exec claude-sandbox claude)'
 
 # Activate my Python environment:
 source ~/pyenv/bin/activate
