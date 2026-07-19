@@ -3,10 +3,11 @@
     "DISABLE_TELEMETRY": "1",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
-  "model": "opus[1m]",
+  "model": "claude-fable-5",
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "includeCoAuthoredBy": false,
+  "skipWorkflowUsageWarning": true,
   "sandbox": {
     "enabled": false
   },
