@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.14
+#!/usr/bin/env python3
 """Render shared agent instructions from INSTRUCTIONS.md.j2."""
 
 from pathlib import Path
@@ -6,31 +6,32 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "INSTRUCTIONS.md.j2"
-TARGETS = (
-    (ROOT / ".claude/CLAUDE.md", "Claude", "CLAUDE.md", "claude"),
-    (ROOT / ".codex/AGENTS.md", "Codex", "AGENTS.md", "codex"),
-)
+TARGETS = {
+    ROOT / ".claude/CLAUDE.md": {
+        "agent_name": "Claude",
+        "instruction_filename": "CLAUDE.md",
+        "agent_home_name": "claude",
+    },
+    ROOT / ".codex/AGENTS.md": {
+        "agent_name": "Codex",
+        "instruction_filename": "AGENTS.md",
+        "agent_home_name": "codex",
+    },
+}
 
 
-def render(template: str, agent_name: str, instruction_filename: str, agent_home_name: str) -> str:
+def render(template: str, variables: dict[str, str]) -> str:
     """Substitute the supported template variables.
 
     Args:
         template: Shared instruction template text.
-        agent_name: Display name of the target agent.
-        instruction_filename: Target instruction filename.
-        agent_home_name: Name of the agent state directory under the home directory.
+        variables: Template-variable names and their replacement values.
 
     Returns:
         Rendered instruction text.
     """
-    replacements = {
-        "{{ agent_name }}": agent_name,
-        "{{ instruction_filename }}": instruction_filename,
-        "{{ agent_home_name }}": agent_home_name,
-    }
-    for variable, value in replacements.items():
-        template = template.replace(variable, value)
+    for variable, value in variables.items():
+        template = template.replace(f"{{{{ {variable} }}}}", value)
     return template
 
 
@@ -41,8 +42,8 @@ def main() -> None:
         None. The rendered files are written to their tracked locations.
     """
     template = TEMPLATE.read_text()
-    for target, agent_name, instruction_filename, agent_home_name in TARGETS:
-        target.write_text(render(template, agent_name, instruction_filename, agent_home_name))
+    for target, variables in TARGETS.items():
+        target.write_text(render(template, variables))
 
 
 if __name__ == "__main__":
