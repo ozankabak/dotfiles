@@ -321,24 +321,12 @@ def check(cmd: str, root: Path, agent: str) -> str | None:
     return None
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse hook command-line arguments.
-
-    Returns:
-        Parsed hook options.
+def main() -> None:
+    """Read a hook payload and emit the permission decision.
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--agent", choices=sorted(AGENT_HOMES), required=True)
-    return parser.parse_args()
-
-
-def main() -> None:
-    """Read a hook payload and emit the permission decision.
-
-    Returns:
-        None. The decision is written in JSON format to standard output.
-    """
-    agent = parse_args().agent
+    agent = parser.parse_args().agent
     payload = json.load(sys.stdin)
     cmd = payload.get("tool_input", {}).get("command", "")
     env_value = os.environ.get(f"{agent.upper()}_PROJECT_DIR")
