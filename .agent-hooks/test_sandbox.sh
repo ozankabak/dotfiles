@@ -2,7 +2,7 @@
 # Comprehensive test suite for sandboxing.
 # Run: ./test_sandbox.sh
 
-AGENT="${AGENT:-codex}"
+AGENT=""
 if [[ "${1:-}" == "--agent" ]]; then
     AGENT="$2"
     shift 2
@@ -13,7 +13,6 @@ if [[ "$AGENT" != "claude" && "$AGENT" != "codex" ]]; then
 fi
 HOOK="${HOOK:-$HOME/.agent-hooks/path_check.py}"
 CWD="${CWD:-$PWD}"
-PYTHON="${PYTHON:-python3.14}"
 export EVIL=/etc  # For env var expansion tests
 export "${AGENT^^}_PROJECT_DIR=${CWD}"
 PASS=0
@@ -24,7 +23,7 @@ test_cmd() {
     # Use jq to properly escape the command for JSON
     local input output decision
     input=$(jq -n --arg cmd "$cmd" --arg cwd "$CWD" '{"tool_input":{"command":$cmd},"cwd":$cwd}')
-    output=$(echo "$input" | "$PYTHON" "$HOOK" --agent "$AGENT" 2>/dev/null)
+    output=$(echo "$input" | python3 "$HOOK" --agent "$AGENT" 2>/dev/null)
     if [[ "$AGENT" == "claude" ]]; then
         decision=$(echo "$output" | jq -r '.decision // "error"')
         expected_decision="approve"
@@ -413,7 +412,7 @@ test_exec() {
     shift 2
     local code="$*"
 
-    if "$PYTHON" -c "$code" 2>/dev/null; then
+    if python3 -c "$code" 2>/dev/null; then
         result=0
     else
         result=1
