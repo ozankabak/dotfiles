@@ -98,9 +98,13 @@ Codex `PreToolUse` hook. The hook is automatically discovered from
 `~/.codex/hooks.json`; review and trust it with Codex's `/hooks` command after
 installing or changing it.
 
-The `.codex/rules/default.rules` file is generated from the Claude command
-permissions. It preserves allow, prompt, and forbidden decisions through Codex's
-native execution-policy engine. Codex has native support for the imported
+The `.codex/rules/default.rules` file is generated from Claude's Bash permissions
+with `scripts/generate-codex-rules.py`; check it for drift with
+`scripts/verify-codex-rules.sh`. Codex execution-policy rules cannot represent
+Claude's non-command `Read` and `Edit` permissions, including the sensitive-file
+read denies, so those remain an explicit hardening task rather than implied
+coverage. The generated rules preserve allow, prompt, and forbidden command
+decisions through Codex's native execution-policy engine. Codex has native support for the imported
 `clangd-lsp@claude-plugins-official` plugin; Codex reports it as installed and
 enabled. Codex does not provide an executable custom status-line hook. The external
 macOS sandbox wrapper must run Codex in external-sandbox mode to avoid unsupported
