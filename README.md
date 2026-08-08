@@ -83,6 +83,9 @@ I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access t
 This setup consists of three layers:
 - The primary security boundary is an OS-level macOS sandbox (`sandbox-exec`) that restricts file reads to the current working directory and system paths, limits writes to the project directory, `/tmp`, select caches, and the selected agent's state directory (`~/.claude` or `~/.codex`), while permitting full network access.
 - A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside the sandbox boundaries, catching many mistakes before they hit the OS sandbox.
+- For Codex, that hook also rejects shell access to workspace `.env`/`.env.*`,
+  `*secret*`, `.ssh`, `.aws`, and `.gnupg` paths. The outer `agent-sandbox`
+  profile denies reads of the same paths for sandboxed runs.
 - The permissions layer in Claude's `settings.json` and Codex's `.codex/rules/default.rules` controls prompting UX rather than security: it auto-approves common development commands (coreutils, git, build tools, compilers, linters, network utilities) for seamless workflow, requires confirmation for operations affecting remote systems (`git push`, package publishing, `docker`, GitHub write operations), and outright blocks dangerous patterns (`sudo`/`su`, force push, repository deletion) and sensitive file reads (.env, secrets,
   credentials).
 
@@ -101,11 +104,17 @@ installing or changing it.
 The `.codex/rules/default.rules` file is generated from Claude's Bash permissions
 with `scripts/generate-codex-rules.py`; check it for drift with
 `scripts/verify-codex-rules.sh`. Codex execution-policy rules cannot represent
-Claude's non-command `Read` and `Edit` permissions, including the sensitive-file
-read denies, so those remain an explicit hardening task rather than implied
-coverage. The generated rules preserve allow, prompt, and forbidden command
-decisions through Codex's native execution-policy engine. Codex has native support for the imported
+Claude's non-command `Read` and `Edit` permissions. The sensitive-file read
+denies are instead enforced for shell access by the Codex hook and for all file
+access when using `agent-sandbox`; direct Codex runs still rely on its
+workspace-write sandbox and do not have an equivalent per-read deny. The generated rules preserve
+allow, prompt, and forbidden command decisions through Codex's native
+execution-policy engine. Codex has native support for the imported
 `clangd-lsp@claude-plugins-official` plugin; Codex reports it as installed and
 enabled. Codex does not provide an executable custom status-line hook. The external
 macOS sandbox wrapper must run Codex in external-sandbox mode to avoid unsupported
 nested macOS sandboxes.
+
+Run `scripts/test-agent-sandbox-sensitive.sh` directly on the macOS host to
+verify the external profile's sensitive-file denies; it cannot run from an
+existing `sandbox-exec` session.

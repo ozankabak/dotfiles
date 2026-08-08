@@ -66,6 +66,16 @@ test_cmd 0 "\$HOME/.codex" 'ls $HOME/.codex'
 test_cmd 0 "\$HOME/.codex subdir" 'cat $HOME/.codex/config.toml'
 
 echo ""
+echo "=== Sensitive Workspace Paths ==="
+test_cmd 2 "workspace .env blocked" "cat .env"
+test_cmd 2 "workspace .env variant blocked" "cat ./config/.env.local"
+test_cmd 2 "workspace secret blocked" "cat ./config/api-secret.txt"
+test_cmd 2 "workspace .ssh blocked" "cat ./.ssh/id_ed25519"
+test_cmd 2 "workspace .aws blocked" "cat ./.aws/credentials"
+test_cmd 2 "workspace .gnupg blocked" "cat ./.gnupg/private-keys-v1.d/key"
+test_cmd 0 "ordinary workspace file allowed" "cat ./config/application.toml"
+
+echo ""
 echo "=== Environment Variable Paths ==="
 # Note: These tests require EVIL=/etc to be set
 test_cmd 2 "env var /etc path" 'cat $EVIL/passwd'

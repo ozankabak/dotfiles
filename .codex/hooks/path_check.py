@@ -57,6 +57,8 @@ _DEV_OK = frozenset(
 
 # Flag patterns that embed absolute paths: -I/path, --prefix=/path, etc.
 _FLAG_WITH_PATH = re.compile(r"^--?[a-zA-Z][-a-zA-Z0-9_]*[=:]?(.+)$")
+_SENSITIVE_BARE_PATH = re.compile(r"^(?:\.env(?:\..*)?|[^/]*secret[^/]*)$")
+_SENSITIVE_DIRECTORIES = frozenset({".ssh", ".aws", ".gnupg"})
 
 
 def _expand(p: str) -> str:
@@ -91,8 +93,22 @@ def _extract_paths(token: str) -> Iterator[str]:
         if "/" in value or value.startswith("~"):
             yield value
     # Plain path or relative path:
-    elif "/" in token or token.startswith("~"):
+    elif "/" in token or token.startswith("~") or _SENSITIVE_BARE_PATH.fullmatch(token):
         yield token
+
+
+def _is_sensitive_workspace_path(resolved: Path, root: Path) -> bool:
+    """Return whether a resolved workspace path matches Claude's read denies."""
+    try:
+        relative = resolved.relative_to(root)
+    except ValueError:
+        return False
+    return (
+        relative.name == ".env"
+        or relative.name.startswith(".env.")
+        or "secret" in relative.name
+        or any(part in _SENSITIVE_DIRECTORIES for part in relative.parts)
+    )
 
 
 def inside(p: str, root: Path) -> str | None:
@@ -120,6 +136,8 @@ def inside(p: str, root: Path) -> str | None:
     except OSError:
         return expanded
 
+    if _is_sensitive_workspace_path(resolved, root):
+        return f"{expanded} (protected sensitive path)"
     if resolved.is_relative_to(root) or any(
         resolved.is_relative_to(t) for t in TMP_ROOTS
     ):

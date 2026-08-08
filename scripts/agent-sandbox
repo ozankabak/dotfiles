@@ -299,6 +299,15 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
     (subpath (string-append (param "HOME_DIR") "/.local/share/uv"))
 )
 
+;; Preserve Claude's sensitive-file read denies inside the project directory.
+;; The path-check hook gives a friendlier diagnostic for shell commands; these
+;; OS-level rules also protect direct file access while agent-sandbox is active.
+(deny file-read*
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.env(\\..*)?$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?[^/]*secret[^/]*$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.(ssh|aws|gnupg)(/.*)?$"))
+)
+
 ;; read [~]/Library/Java
 (allow file-read*
     (subpath (string-append (param "HOME_DIR") "/Library/Java"))
