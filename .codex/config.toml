@@ -1,11 +1,11 @@
-# Global Codex defaults. The external macOS sandbox wrapper remains the
-# enforcement boundary; these values preserve the interactive Codex experience.
+# Global Codex defaults. My external macOS sandbox is the enforcement
+# boundary; these values preserve the interactive Codex experience.
 model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 analytics.enabled = false
-# Execute only the migrated allowlist without a prompt. Commands outside that
-# list prompt, while `.codex/rules/default.rules` can require a prompt or forbid
-# more-specific command prefixes.
+
+# Execute only the allowlist without a prompt. Commands outside that list
+# prompt, while `.codex/rules/default.rules` can require a prompt or deny more-specific command prefixes.
 approval_policy = "untrusted"
 sandbox_mode = "workspace-write"
 web_search = "live"
@@ -13,6 +13,6 @@ web_search = "live"
 [sandbox_workspace_write]
 network_access = true
 
-# Continue to honor existing project-specific Claude instructions while projects
-# migrate to the native AGENTS.md filename.
+# Continue to honor existing project-specific Claude instructions.
 project_doc_fallback_filenames = ["CLAUDE.md"]
+
