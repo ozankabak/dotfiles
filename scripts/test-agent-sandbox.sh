@@ -68,7 +68,14 @@ expect_profile_contains() {
     local description="$2"
     local pattern="$3"
 
-    if rg --quiet --fixed-strings "$pattern" "$PROFILE_FILE"; then
+    if [[ ! -f "$PROFILE_FILE" ]]; then
+        echo "✗ $description" >&2
+        echo "  effective profile was not rendered" >&2
+        ((FAIL++))
+        return
+    fi
+
+    if grep -Fq "$pattern" "$PROFILE_FILE"; then
         actual=0
     else
         actual=1
