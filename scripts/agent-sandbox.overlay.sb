@@ -1,0 +1,56 @@
+;; Local compatibility and security overlay for agent-sandbox.
+
+;; Upstream grants all Keychains. Revoke that broad grant; the wrapper appends
+;; Claude's single login keychain database after /login.
+(deny file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (string-append (param "HOME_DIR") "/Library/Keychains"))
+)
+(deny mach-lookup
+    (global-name "com.apple.SecurityServer")
+    (global-name "com.apple.securityd")
+    (global-name "com.apple.securityd.xpc")
+)
+
+;; Upstream grants ~/.codex. Preserve the existing override for a custom
+;; CODEX_HOME as well.
+(allow file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (param "CODEX_HOME_DIR"))
+)
+
+;; Tool configuration and caches used in this environment.
+(allow file-read*
+    (subpath (string-append (param "HOME_DIR") "/.rustup"))
+    (subpath "/Library/Developer")
+    (subpath "/Applications/Xcode.app")
+    (subpath "/Applications/Xcode-beta.app")
+)
+
+;; Shared hook implementation used by Claude and Codex.
+(allow file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (string-append (param "HOME_DIR") "/.agent-hooks"))
+    (subpath (string-append (param "HOME_DIR") "/.cargo"))
+)
+
+;; Python multiprocessing and local build tooling.
+(allow ipc-posix-shm)
+(allow ipc-posix-sem)
+(allow sysctl-read)
+
+;; Caches that require writes during development.
+(allow file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (string-append (param "HOME_DIR") "/.sbt"))
+    (subpath (string-append (param "HOME_DIR") "/.ivy2"))
+    (subpath (string-append (param "HOME_DIR") "/.m2"))
+    (subpath (string-append (param "HOME_DIR") "/.jgit"))
+    (subpath (string-append (param "HOME_DIR") "/.config/jgit"))
+    (subpath (string-append (param "HOME_DIR") "/Library/Caches/Coursier"))
+    (subpath (string-append (param "HOME_DIR") "/.local/share/uv"))
+)
+
+;; Prevent sensitive-file reads, including inside the project directory.
+(deny file-read*
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.env(\\..*)?$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?[^/]*\\.(pem|key)$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?id_rsa[^/]*$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.(ssh|aws|gnupg)(/.*)?$"))
+)
