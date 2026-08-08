@@ -75,7 +75,7 @@ _DEV_OK = frozenset(
 
 # Flag patterns that embed absolute paths: -I/path, --prefix=/path, etc.
 _FLAG_WITH_PATH = re.compile(r"^--?[a-zA-Z][-a-zA-Z0-9_]*[=:]?(.+)$")
-_SENSITIVE_BARE_PATH = re.compile(r"^(?:\.env(?:\..*)?|[^/]*secret[^/]*)$")
+_SENSITIVE_BARE_PATH = re.compile(r"^(?:\.env(?:\..*)?|[^/]*\.(?:pem|key)|id_rsa[^/]*)$")
 _SENSITIVE_DIRECTORIES = frozenset({".ssh", ".aws", ".gnupg"})
 
 
@@ -132,7 +132,8 @@ def _is_sensitive_workspace_path(resolved: Path, root: Path) -> bool:
     return (
         relative.name == ".env"
         or relative.name.startswith(".env.")
-        or "secret" in relative.name
+        or relative.name.endswith((".pem", ".key"))
+        or relative.name.startswith("id_rsa")
         or any(part in _SENSITIVE_DIRECTORIES for part in relative.parts)
     )
 

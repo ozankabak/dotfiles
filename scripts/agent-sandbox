@@ -292,7 +292,8 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
 ;; OS-level rules also protect direct file access while agent-sandbox is active.
 (deny file-read*
     (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.env(\\..*)?$"))
-    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?[^/]*secret[^/]*$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?[^/]*\\.(pem|key)$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?id_rsa[^/]*$"))
     (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.(ssh|aws|gnupg)(/.*)?$"))
 )
 

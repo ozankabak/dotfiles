@@ -9,7 +9,7 @@ trap 'rm -rf "$TEST_DIR"' EXIT
 
 mkdir -p "$TEST_DIR/.ssh"
 printf 'protected\n' > "$TEST_DIR/.env"
-printf 'protected\n' > "$TEST_DIR/api-secret.txt"
+printf 'protected\n' > "$TEST_DIR/service.key"
 printf 'protected\n' > "$TEST_DIR/.ssh/id_ed25519"
 printf 'ordinary\n' > "$TEST_DIR/application.toml"
 
@@ -29,7 +29,7 @@ expect_allowed() {
 }
 
 expect_denied "$TEST_DIR/.env"
-expect_denied "$TEST_DIR/api-secret.txt"
+expect_denied "$TEST_DIR/service.key"
 expect_denied "$TEST_DIR/.ssh/id_ed25519"
 expect_allowed "$TEST_DIR/application.toml"
 

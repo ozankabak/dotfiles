@@ -14,7 +14,11 @@ fi
 HOOK="${HOOK:-$HOME/.agent-hooks/path_check.py}"
 CWD="${CWD:-$PWD}"
 export EVIL=/etc  # For env var expansion tests
-export "${AGENT^^}_PROJECT_DIR=${CWD}"
+if [[ "$AGENT" == "claude" ]]; then
+    export CLAUDE_PROJECT_DIR="$CWD"
+else
+    export CODEX_PROJECT_DIR="$CWD"
+fi
 PASS=0
 FAIL=0
 
@@ -83,7 +87,9 @@ echo ""
 echo "=== Sensitive Workspace Paths ==="
 test_cmd 2 "workspace .env blocked" "cat .env"
 test_cmd 2 "workspace .env variant blocked" "cat ./config/.env.local"
-test_cmd 2 "workspace secret blocked" "cat ./config/api-secret.txt"
+test_cmd 2 "workspace PEM blocked" "cat ./config/service.pem"
+test_cmd 2 "workspace key blocked" "cat ./config/service.key"
+test_cmd 2 "workspace SSH key blocked" "cat ./config/id_rsa_backup"
 test_cmd 2 "workspace .ssh blocked" "cat ./.ssh/id_ed25519"
 test_cmd 2 "workspace .aws blocked" "cat ./.aws/credentials"
 test_cmd 2 "workspace .gnupg blocked" "cat ./.gnupg/private-keys-v1.d/key"
