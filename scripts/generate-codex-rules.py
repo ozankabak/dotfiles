@@ -3,7 +3,7 @@
 
 Deliberately does not translate Claude's ``Read`` and ``Edit`` permissions.
 Codex "execpolicy" rules only govern executable command prefixes. The generator
-reports those omissions so a policy review cannot mistake them for coverage.
+lists those omissions so a policy review cannot mistake them for coverage.
 """
 
 import argparse
@@ -102,6 +102,21 @@ def render(permissions: dict[str, object]) -> tuple[str, dict[str, int]]:
     return "\n".join(lines) + "\n", counts
 
 
+def non_command_permissions(permissions: dict[str, object]) -> dict[str, list[str]]:
+    """Return Claude permissions that cannot become Codex execution rules.
+
+    Args:
+        permissions: Claude permissions dictionary.
+
+    Returns:
+        Non-Bash permission strings grouped by their Claude decision.
+    """
+    return {
+        source_name: [entry for entry in permissions[source_name] if bash_pattern(entry) is None]
+        for source_name, _ in DECISIONS
+    }
+
+
 def main() -> None:
     """Generate or verify Codex rules."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -114,7 +129,9 @@ def main() -> None:
     )
     args = parser.parse_args()
     settings = json.loads(args.source.read_text())
-    rules, counts = render(settings["permissions"])
+    permissions = settings["permissions"]
+    rules, counts = render(permissions)
+    omissions = non_command_permissions(permissions)
 
     if args.check:
         if args.output.exists():
@@ -133,6 +150,10 @@ def main() -> None:
         f"allow={counts['allow_omitted']}, ask={counts['ask_omitted']}, "
         f"deny={counts['deny_omitted']}."
     )
+    for source_name, _ in DECISIONS:
+        print(f"\nUnmigrated {source_name} permissions ({len(omissions[source_name])}):")
+        for permission in omissions[source_name]:
+            print(f"  {permission}")
 
 
 if __name__ == "__main__":
