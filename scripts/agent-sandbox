@@ -140,6 +140,9 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
     (literal (param "AGENT_CONFIG_FILE"))
     (literal (param "AGENT_CONFIG_BACKUP_FILE"))
 
+    ;; Shared hook implementation used by Claude and Codex
+    (subpath (string-append (param "HOME_DIR") "/.agent-hooks"))
+
     ;; Gemini configuraiton
     (subpath (string-append (param "HOME_DIR") "/.gemini"))
 

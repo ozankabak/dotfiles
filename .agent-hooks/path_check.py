@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Claude Code PreToolUse hook to validate shell commands stay within sandbox.
+"""Validate Claude and Codex shell commands against the shared path policy.
 
 This hook checks that all file paths in Bash commands resolve within the
 project directory or /tmp. It handles redirects, flag-embedded paths,
 tilde expansion, environment variables, and nested subcommands.
 
 Usage:
-    Configure in ~/.claude/settings.json:
+    Configure the relevant hook with ``path_check.py --agent <claude|codex>``.
     {
       "hooks": {
         "PreToolUse": [
@@ -33,7 +33,10 @@ if tmpdir := os.environ.get("TMPDIR"):
         TMP_ROOTS.add(Path(tmpdir).expanduser().resolve())
     except OSError:
         pass
-CLAUDE_HOME = Path("~/.claude").expanduser().resolve()
+AGENT_HOMES = {
+    "claude": Path("~/.claude").expanduser().resolve(),
+    "codex": Path(os.environ.get("CODEX_HOME", "~/.codex")).expanduser().resolve(),
+}
 
 _DEV_OK = frozenset(
     {
@@ -57,6 +60,8 @@ _DEV_OK = frozenset(
 
 # Flag patterns that embed absolute paths: -I/path, --prefix=/path, etc.
 _FLAG_WITH_PATH = re.compile(r"^--?[a-zA-Z][-a-zA-Z0-9_]*[=:]?(.+)$")
+_SENSITIVE_BARE_PATH = re.compile(r"^(?:\.env(?:\..*)?|[^/]*secret[^/]*)$")
+_SENSITIVE_DIRECTORIES = frozenset({".ssh", ".aws", ".gnupg"})
 
 
 def _expand(p: str) -> str:
@@ -91,16 +96,39 @@ def _extract_paths(token: str) -> Iterator[str]:
         if "/" in value or value.startswith("~"):
             yield value
     # Plain path or relative path:
-    elif "/" in token or token.startswith("~"):
+    elif "/" in token or token.startswith("~") or _SENSITIVE_BARE_PATH.fullmatch(token):
         yield token
 
 
-def inside(p: str, root: Path) -> str | None:
+def _is_sensitive_workspace_path(resolved: Path, root: Path) -> bool:
+    """Return whether a workspace path matches Claude's sensitive-read denies.
+
+    Args:
+        resolved: Fully resolved candidate path.
+        root: Resolved workspace root.
+
+    Returns:
+        True when the path is a protected workspace file or directory.
+    """
+    try:
+        relative = resolved.relative_to(root)
+    except ValueError:
+        return False
+    return (
+        relative.name == ".env"
+        or relative.name.startswith(".env.")
+        or "secret" in relative.name
+        or any(part in _SENSITIVE_DIRECTORIES for part in relative.parts)
+    )
+
+
+def inside(p: str, root: Path, agent: str) -> str | None:
     """Check if a path resolves within sandbox boundaries.
 
     Args:
         p: Path string to validate (may contain ``~`` or ``$VAR``).
         root: Project root defining the sandbox.
+        agent: Agent name selecting the permitted state directory.
 
     Returns:
         None if safe, otherwise the expanded path string for error messages.
@@ -109,7 +137,7 @@ def inside(p: str, root: Path) -> str | None:
         return None
     elif (expanded := _expand(p)) in _DEV_OK:
         return None
-    elif (Path(expanded).resolve()).is_relative_to(CLAUDE_HOME):
+    elif (Path(expanded).resolve()).is_relative_to(AGENT_HOMES[agent]):
         return None
     # Flags without embedded paths are OK:
     elif expanded.startswith("-") and "/" not in expanded and "~" not in expanded:
@@ -120,6 +148,8 @@ def inside(p: str, root: Path) -> str | None:
     except OSError:
         return expanded
 
+    if _is_sensitive_workspace_path(resolved, root):
+        return f"{expanded} (protected sensitive path)"
     if resolved.is_relative_to(root) or any(
         resolved.is_relative_to(t) for t in TMP_ROOTS
     ):
@@ -241,19 +271,20 @@ def _neutralize_escapes(cmd: str) -> str:
     return "".join(out)
 
 
-def check(cmd: str, root: Path) -> str | None:
+def check(cmd: str, root: Path, agent: str) -> str | None:
     """Validate a shell command accesses only sandbox-safe paths.
 
     Args:
         cmd: Shell command string.
         root: Project root defining sandbox boundary.
+        agent: Agent name selecting the permitted state directory.
 
     Returns:
         Error message if violation found, None if safe.
     """
     # Recurse into subcommands:
     for sub in subcommands(cmd):
-        if err := check(sub, root):
+        if err := check(sub, root, agent):
             return err
     # Neutralize escaped substitutions before shlex (they don't execute,
     # avoid false positives):
@@ -270,26 +301,34 @@ def check(cmd: str, root: Path) -> str | None:
 
     for token in tokens:
         for path in _extract_paths(token):
-            if err := inside(path, root):
+            if err := inside(path, root, agent):
                 return f"Path '{err}' outside sandbox"
     return None
 
 
 def main() -> None:
-    """Read a hook payload and emit Claude's permission decision.
+    """Read a hook payload and emit the selected agent's permission decision.
 
     Returns:
         None. The decision is written as JSON to standard output.
     """
+    if len(sys.argv) != 3 or sys.argv[1] != "--agent" or sys.argv[2] not in AGENT_HOMES:
+        raise SystemExit("Usage: path_check.py --agent <claude|codex>")
+    agent = sys.argv[2]
     payload = json.load(sys.stdin)
     cmd = payload.get("tool_input", {}).get("command", "")
-    env_value = os.environ.get("CLAUDE_PROJECT_DIR")
+    env_value = os.environ.get(f"{agent.upper()}_PROJECT_DIR")
     root = Path(env_value or payload.get("cwd", ".")).resolve()
 
-    if err := check(cmd, root):
-        json.dump({"decision": "block", "reason": err}, sys.stdout)
+    if agent == "claude":
+        output = {"decision": "approve"}
+        if err := check(cmd, root, agent):
+            output = {"decision": "block", "reason": err}
     else:
-        json.dump({"decision": "approve"}, sys.stdout)
+        output = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}
+        if err := check(cmd, root, agent):
+            output = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": err}}
+    json.dump(output, sys.stdout)
 
 
 if __name__ == "__main__":

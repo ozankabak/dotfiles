@@ -104,7 +104,8 @@ The `.codex` directory is the corresponding global Codex configuration. It selec
 web search, and uses Codex's workspace-write sandbox with network access. It also
 uses the same path-validation policy as the Claude configuration through a native
 Codex `PreToolUse` hook. The hook is automatically discovered from
-`~/.codex/hooks.json`; review and trust it with Codex's `/hooks` command after
+`~/.codex/hooks.json`; the shared implementation lives at
+`~/.agent-hooks/path_check.py`. Review and trust it with Codex's `/hooks` command after
 installing or changing it.
 
 The `.codex/rules/default.rules` file is generated from Claude's Bash permissions

@@ -2,11 +2,20 @@
 # Comprehensive test suite for sandboxing.
 # Run: ./test_sandbox.sh
 
-HOOK="${HOOK:-$HOME/.codex/hooks/path_check.py}"
+AGENT="${AGENT:-codex}"
+if [[ "${1:-}" == "--agent" ]]; then
+    AGENT="$2"
+    shift 2
+fi
+if [[ "$AGENT" != "claude" && "$AGENT" != "codex" ]]; then
+    echo "Usage: $0 [--agent <claude|codex>]" >&2
+    exit 1
+fi
+HOOK="${HOOK:-$HOME/.agent-hooks/path_check.py}"
 CWD="${CWD:-$PWD}"
 PYTHON="${PYTHON:-python3.14}"
 export EVIL=/etc  # For env var expansion tests
-export CODEX_PROJECT_DIR="${CODEX_PROJECT_DIR:-$CWD}"  # Simulate Codex's payload cwd
+export "${AGENT^^}_PROJECT_DIR=${CWD}"
 PASS=0
 FAIL=0
 
@@ -15,9 +24,15 @@ test_cmd() {
     # Use jq to properly escape the command for JSON
     local input output decision
     input=$(jq -n --arg cmd "$cmd" --arg cwd "$CWD" '{"tool_input":{"command":$cmd},"cwd":$cwd}')
-    output=$(echo "$input" | "$PYTHON" "$HOOK" 2>/dev/null)
-    decision=$(echo "$output" | jq -r '.hookSpecificOutput.permissionDecision // "error"')
-    if [[ "$decision" == "allow" ]]; then
+    output=$(echo "$input" | "$PYTHON" "$HOOK" --agent "$AGENT" 2>/dev/null)
+    if [[ "$AGENT" == "claude" ]]; then
+        decision=$(echo "$output" | jq -r '.decision // "error"')
+        expected_decision="approve"
+    else
+        decision=$(echo "$output" | jq -r '.hookSpecificOutput.permissionDecision // "error"')
+        expected_decision="allow"
+    fi
+    if [[ "$decision" == "$expected_decision" ]]; then
         result=0
     else
         result=2
@@ -56,14 +71,14 @@ test_cmd 2 "tilde redirect" "echo test > ~/output.txt"
 test_cmd 2 "tilde .cache blocked" "ls ~/.cache"
 
 echo ""
-echo "=== ~/.codex Exception ==="
-test_cmd 0 "~/.codex allowed" "ls ~/.codex"
-test_cmd 0 "~/.codex subdir" "cat ~/.codex/config.toml"
-test_cmd 0 "~/.codex nested" "ls ~/.codex/hooks/path_check.py"
-test_cmd 0 "~/.codex redirect" "echo test > ~/.codex/test.txt"
-test_cmd 0 "~/.codex in flag" "cmd --config=~/.codex/config"
-test_cmd 0 "\$HOME/.codex" 'ls $HOME/.codex'
-test_cmd 0 "\$HOME/.codex subdir" 'cat $HOME/.codex/config.toml'
+echo "=== Agent State Exception ==="
+AGENT_HOME="$HOME/.${AGENT}"
+test_cmd 0 "agent home allowed" "ls $AGENT_HOME"
+test_cmd 0 "agent home subdir" "cat $AGENT_HOME/config.toml"
+test_cmd 0 "agent home nested" "ls $AGENT_HOME/hooks/path_check.py"
+test_cmd 0 "agent home redirect" "echo test > $AGENT_HOME/test.txt"
+test_cmd 0 "agent home in flag" "cmd --config=$AGENT_HOME/config"
+test_cmd 0 "agent home via HOME" "ls \$HOME/.${AGENT}"
 
 echo ""
 echo "=== Sensitive Workspace Paths ==="
