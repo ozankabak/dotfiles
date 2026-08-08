@@ -3,7 +3,10 @@
 model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 analytics.enabled = false
-approval_policy = "on-request"
+# Execute only the migrated allowlist without a prompt. Commands outside that
+# list prompt, while `.codex/rules/default.rules` can require a prompt or forbid
+# more-specific command prefixes.
+approval_policy = "untrusted"
 sandbox_mode = "workspace-write"
 web_search = "live"
 
