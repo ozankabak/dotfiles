@@ -33,12 +33,12 @@ printf 'protected\n' > "$TEST_DIR/.gnupg/private-key"
 printf 'ordinary\n' > "$TEST_DIR/config/application.toml"
 run_sandbox() {
     "$ROOT/scripts/agent-sandbox" --agent "$AGENT" --target-dir "$TEST_DIR" -- \
-        python3.14 -c "$@"
+        python3 -I -c "$@"
 }
 
 run_sandbox_with_codex_home() {
     env CODEX_HOME="$CODEX_HOME_DIR" "$ROOT/scripts/agent-sandbox" --agent "$AGENT" \
-        --target-dir "$TEST_DIR" -- python3.14 -c "$@"
+        --target-dir "$TEST_DIR" -- python3 -I -c "$@"
 }
 
 expect_status() {
