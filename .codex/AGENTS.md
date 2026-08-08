@@ -846,4 +846,3 @@ Before finalizing:
 ### Phase 5: Session Handoff
 
 If ending session before project completion, go through the steps in [Session Handoff](#session-handoff).
-
