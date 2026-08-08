@@ -287,9 +287,7 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
     (subpath (string-append (param "HOME_DIR") "/.local/share/uv"))
 )
 
-;; Preserve Claude's sensitive-file read denies inside the project directory.
-;; The path-check hook gives a friendlier diagnostic for shell commands; these
-;; OS-level rules also protect direct file access while agent-sandbox is active.
+;; Prevent sensitive-file reads (even inside the project directory).
 (deny file-read*
     (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.env(\\..*)?$"))
     (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?[^/]*\\.(pem|key)$"))
@@ -495,7 +493,7 @@ if [[ "${NO_WORKAROUND}" == 0 ]]; then
         echo "${AGENT_PROFILE_EXTRA}"
         echo ""
         echo ";; Generated allow-read rules for: ${TARGET_DIR}"
-        echo ";; some agents need list access to all parent directories of TARGET_DIR"
+        echo ";; some agents (Claude) require list access to all parent directories of TARGET_DIR"
         echo ";; - it doesn't need access to read the contents of directories, only the directories"
         echo ";; themselves. Otherwise it will set PATH to "" and disable colored output"
         echo "${WORKAROUND_RULES}"

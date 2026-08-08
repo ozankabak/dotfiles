@@ -93,10 +93,9 @@ I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access t
 This setup consists of three layers:
 
 - The primary security boundary is an OS-level macOS sandbox (`sandbox-exec`) that restricts file reads to the current working directory and system paths, limits writes to the project directory, `/tmp`, select caches, and the agent's state directory (`~/.claude` or `~/.codex`), while permitting full network access.
-- A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside sandbox boundaries, catching many mistakes before they hit the OS sandbox.
-- For Codex, that hook also rejects shell access to workspace `.env`/`.env.*`, `*.pem`, `*.key`, `id_rsa*`, `.ssh`, `.aws`, and `.gnupg` paths. The outer `agent-sandbox` profile also denies reads of the same paths.
+- A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside sandbox boundaries, catching many mistakes before they hit the OS sandbox. This hook also rejects shell access to workspace `.env`/`.env.*`, `*.pem`, `*.key`, `id_rsa*`, `.ssh`, `.aws`, and `.gnupg` paths. The outer `agent-sandbox` profile also denies reads for these patterns.
 - The `agent-sandbox` script provides the necessary login-Keychain permissions for Claude runs.
-- Claude's `settings.json` and Codex's `.codex/rules/default.rules` control command prompting rather than filesystem security: they auto-approve common development commands, require confirmation for remote-affecting operations, and block dangerous command patterns such as `sudo`, force pushes, and repository deletion. Claude also blocks sensitive-file reads; Codex applies those path protections through its hook and the sandbox.
+- Claude's `settings.json` and Codex's `.codex/rules/default.rules` control command prompting rather than filesystem security. They auto-approve common development commands, require confirmation for remote-affecting operations, and block dangerous command patterns such as `sudo`, force pushes, and repository deletion. Claude also blocks sensitive-file reads; Codex applies those path protections through its hook and the sandbox.
 
 The aim is to prioritize development productivity by eliminating prompts for safe local operations while maintaining human oversight for irreversible or remote-affecting actions, with the OS sandbox as the ultimate safety net.
 
