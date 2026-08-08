@@ -88,3 +88,17 @@ This setup consists of three layers:
 
 The aim is to prioritize development productivity by eliminating prompts for safe local operations while maintaining human oversight for irreversible or remote-affecting actions, with the OS sandbox as the ultimate safety net.
 
+## Codex
+
+The `.codex` directory is the corresponding global Codex configuration. It selects
+`gpt-5.6-sol` with high reasoning effort, disables client analytics, enables live
+web search, and uses Codex's workspace-write sandbox with network access. It also
+uses the same path-validation policy as the Claude configuration through a native
+Codex `PreToolUse` hook. The hook is automatically discovered from
+`~/.codex/hooks.json`; review and trust it with Codex's `/hooks` command after
+installing or changing it.
+
+Codex does not provide Claude's command-by-command allow, ask, and deny lists or
+an executable status-line hook. Its `on-request` approval policy and the external
+macOS sandbox wrapper provide the closest available behavior. The wrapper must be
+run in Codex's external-sandbox mode to avoid unsupported nested macOS sandboxes.

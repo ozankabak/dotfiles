@@ -1,0 +1,15 @@
+# Global Codex defaults. The external macOS sandbox wrapper remains the
+# enforcement boundary; these values preserve the interactive Codex experience.
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+analytics.enabled = false
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "live"
+
+[sandbox_workspace_write]
+network_access = true
+
+# Continue to honor existing project-specific Claude instructions while projects
+# migrate to the native AGENTS.md filename.
+project_doc_fallback_filenames = ["CLAUDE.md"]
