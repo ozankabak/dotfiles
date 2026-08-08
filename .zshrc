@@ -75,9 +75,10 @@ if [ -f ~/.fzf.zsh ]; then
     source ~/.fzf.zsh
 fi
 
-# Use strict sandboxing for Claude:
-alias claude='env -u ANTHROPIC_API_KEY claude-sandbox claude'
+# Use strict sandboxing for coding agents. Codex delegates filesystem confinement
+# to agent-sandbox; its approval rules remain active.
+alias claude='env -u ANTHROPIC_API_KEY agent-sandbox --agent claude -- claude'
+alias codex='agent-sandbox --agent codex -- codex --sandbox danger-full-access'
 
 # Activate my Python environment:
 source ~/pyenv/bin/activate
-
