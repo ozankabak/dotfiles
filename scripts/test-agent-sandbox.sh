@@ -11,15 +11,15 @@ fi
 AGENT="$2"
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 TEST_DIR="$(mktemp -d /tmp/agent-sandbox-test.XXXXXXXXXX)"
-OUTSIDE_FILE="$(mktemp "$HOME/.agent-sandbox-test.XXXXXXXXXX")"
-TEMP_FILE="$(mktemp /tmp/agent-sandbox-temp.XXXXXXXXXX)"
+OUTSIDE_FILE="$(mktemp "$HOME/.agent-sandbox-test.XXXXXXXXXX")" || exit 1
+TEMP_FILE="$(mktemp /tmp/agent-sandbox-temp.XXXXXXXXXX)" || exit 1
 PROFILE_FILE="$TEST_DIR/profile.sb"
-CODEX_HOME_DIR="$TEST_DIR/codex-home"
+CODEX_HOME_DIR="$(mktemp -d "$HOME/.agent-sandbox-codex-home.XXXXXXXXXX")" || exit 1
 OUTPUT_FILE="$TEST_DIR/output"
 PASS=0
 FAIL=0
 
-trap 'rm -rf "$TEST_DIR" "$OUTSIDE_FILE" "$TEMP_FILE"' EXIT
+trap 'rm -rf "$TEST_DIR" "$OUTSIDE_FILE" "$TEMP_FILE" "$CODEX_HOME_DIR"' EXIT
 
 mkdir -p "$TEST_DIR/config" "$TEST_DIR/.ssh" "$TEST_DIR/.aws" "$TEST_DIR/.gnupg"
 printf 'protected\n' > "$TEST_DIR/.env"
@@ -31,16 +31,14 @@ printf 'protected\n' > "$TEST_DIR/.ssh/id_ed25519"
 printf 'protected\n' > "$TEST_DIR/.aws/credentials"
 printf 'protected\n' > "$TEST_DIR/.gnupg/private-key"
 printf 'ordinary\n' > "$TEST_DIR/config/application.toml"
-mkdir -p "$CODEX_HOME_DIR"
-
 run_sandbox() {
     "$ROOT/scripts/agent-sandbox" --agent "$AGENT" --target-dir "$TEST_DIR" -- \
-        python3 -c "$@"
+        python3.14 -c "$@"
 }
 
 run_sandbox_with_codex_home() {
     env CODEX_HOME="$CODEX_HOME_DIR" "$ROOT/scripts/agent-sandbox" --agent "$AGENT" \
-        --target-dir "$TEST_DIR" -- python3 -c "$@"
+        --target-dir "$TEST_DIR" -- python3.14 -c "$@"
 }
 
 expect_status() {
