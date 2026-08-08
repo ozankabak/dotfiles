@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3.14 \"$HOME/.agent-hooks/path_check.py\" --agent codex",
+            "command": "python3 ~/.agent-hooks/path_check.py --agent codex",
             "statusMessage": "Checking command paths"
           }
         ]
