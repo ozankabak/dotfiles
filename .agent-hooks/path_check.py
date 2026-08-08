@@ -6,17 +6,11 @@ project directory or /tmp. It handles redirects, flag-embedded paths,
 tilde expansion, environment variables, and nested subcommands.
 
 Usage:
-    Configure the relevant hook with ``path_check.py --agent <claude|codex>``.
-    {
-      "hooks": {
-        "PreToolUse": [
-          {
-            "matcher": "Bash",
-            "hooks": [{"type": "command", "command": "/path/to/path_check.py"}]
-          }
-        ]
-      }
-    }
+    Claude settings.json command:
+        python3 ~/.agent-hooks/path_check.py --agent claude
+
+    Codex hooks.json command:
+        python3.14 "$HOME/.agent-hooks/path_check.py" --agent codex
 """
 
 import json
