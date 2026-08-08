@@ -13,7 +13,17 @@ TARGETS = (
 
 
 def render(template: str, agent_name: str, instruction_filename: str, agent_home_name: str) -> str:
-    """Substitute the supported template variables."""
+    """Substitute the supported template variables.
+
+    Args:
+        template: Shared instruction template text.
+        agent_name: Display name of the target agent.
+        instruction_filename: Target instruction filename.
+        agent_home_name: Name of the agent state directory under the home directory.
+
+    Returns:
+        Rendered instruction text.
+    """
     replacements = {
         "{{ agent_name }}": agent_name,
         "{{ instruction_filename }}": instruction_filename,
@@ -25,7 +35,11 @@ def render(template: str, agent_name: str, instruction_filename: str, agent_home
 
 
 def main() -> None:
-    """Render both tracked instruction files."""
+    """Render both tracked instruction files.
+
+    Returns:
+        None. The rendered files are written to their tracked locations.
+    """
     template = TEMPLATE.read_text()
     for target, agent_name, instruction_filename, agent_home_name in TARGETS:
         target.write_text(render(template, agent_name, instruction_filename, agent_home_name))

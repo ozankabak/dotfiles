@@ -98,7 +98,15 @@ def _extract_paths(token: str) -> Iterator[str]:
 
 
 def _is_sensitive_workspace_path(resolved: Path, root: Path) -> bool:
-    """Return whether a resolved workspace path matches Claude's read denies."""
+    """Return whether a workspace path matches Claude's sensitive-read denies.
+
+    Args:
+        resolved: Fully resolved candidate path.
+        root: Resolved workspace root.
+
+    Returns:
+        True when the path is a protected workspace file or directory.
+    """
     try:
         relative = resolved.relative_to(root)
     except ValueError:
@@ -294,7 +302,11 @@ def check(cmd: str, root: Path) -> str | None:
 
 
 def main() -> None:
-    """Hook entry point - read JSON from stdin, validate, output result."""
+    """Read a hook payload and emit Codex's permission decision.
+
+    Returns:
+        None. The decision is written as JSON to standard output.
+    """
     payload = json.load(sys.stdin)
     cmd = payload.get("tool_input", {}).get("command", "")
     env_value = os.environ.get("CODEX_PROJECT_DIR")

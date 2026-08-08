@@ -276,7 +276,11 @@ def check(cmd: str, root: Path) -> str | None:
 
 
 def main() -> None:
-    """Hook entry point - read JSON from stdin, validate, output result."""
+    """Read a hook payload and emit Claude's permission decision.
+
+    Returns:
+        None. The decision is written as JSON to standard output.
+    """
     payload = json.load(sys.stdin)
     cmd = payload.get("tool_input", {}).get("command", "")
     env_value = os.environ.get("CLAUDE_PROJECT_DIR")

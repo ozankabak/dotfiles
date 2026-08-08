@@ -26,7 +26,14 @@ DECISIONS: tuple[tuple[str, Decision], ...] = (
 
 
 def bash_pattern(permission: str) -> list[str] | None:
-    """Return a command prefix for a Claude Bash permission entry."""
+    """Return a command prefix for a Claude Bash permission entry.
+
+    Args:
+        permission: A Claude permission string.
+
+    Returns:
+        Shell tokens for a Bash permission, or None for another permission type.
+    """
     if not permission.startswith("Bash(") or not permission.endswith(")"):
         return None
     command = permission.removeprefix("Bash(").removesuffix(")")
@@ -36,12 +43,29 @@ def bash_pattern(permission: str) -> list[str] | None:
 
 
 def starlark_list(tokens: Iterable[str]) -> str:
-    """Render command tokens as a Starlark-compatible list."""
+    """Render command tokens as a Starlark-compatible list.
+
+    Args:
+        tokens: Command-prefix tokens to serialize.
+
+    Returns:
+        A Starlark list literal.
+    """
     return "[" + ", ".join(repr(token) for token in tokens) + "]"
 
 
 def render(settings: dict[str, object]) -> tuple[str, dict[str, int]]:
-    """Render the rules file and return migration counts."""
+    """Render the rules file and return migration counts.
+
+    Args:
+        settings: Parsed Claude settings data.
+
+    Returns:
+        Generated rule text and migration counts by permission class.
+
+    Raises:
+        ValueError: If the permissions structure is invalid.
+    """
     permissions = settings["permissions"]
     if not isinstance(permissions, dict):
         raise ValueError("settings.json permissions must be an object")
@@ -77,7 +101,11 @@ def render(settings: dict[str, object]) -> tuple[str, dict[str, int]]:
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments."""
+    """Parse command-line arguments.
+
+    Returns:
+        Parsed generator options.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -90,7 +118,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    """Generate or verify Codex rules."""
+    """Generate or verify Codex rules.
+
+    Returns:
+        Zero when generation or drift verification succeeds; otherwise one.
+    """
     args = parse_args()
     settings = json.loads(args.source.read_text())
     rules, counts = render(settings)
