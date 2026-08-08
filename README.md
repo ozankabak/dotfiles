@@ -103,5 +103,6 @@ The aim is to prioritize development productivity by eliminating prompts for saf
 ### Codex
 
 - The `scripts/generate-codex-rules.py` script generates `.codex/rules/default.rules` from Claude's Bash permissions. When changing `.claude/settings.json`, regenerate the rules and review the two files together. Generated rules preserve `allow`, `prompt`, and `forbidden` decisions through Codex's native execution-policy engine. Note that Codex's execution-policy rules cannot represent Claude's `Read` and `Edit` permissions, so Codex relies on `path_check.py` and the `agent-sandbox` script to enforce sensitive-file checks.
-- Codex has native support for the imported `clangd-lsp@claude-plugins-official` plugin. Run `scripts/install-codex-plugins.sh` after deployment to configure the marketplace and install it reproducibly.
+- [INSTRUCTIONS.md.j2](INSTRUCTIONS.md.j2) is the shared source for `.claude/CLAUDE.md` and `.codex/AGENTS.md`. After editing it, run `python3 scripts/render-agent-instructions.py` and commit both regenerated files.
+- Codex has native support for the imported `clangd-lsp@claude-plugins-official` plugin. Run `scripts/install-codex-plugins.sh` after deployment, or whenever the tracked Claude plugin settings change, to configure the marketplace and install or repair the plugin reproducibly.
 - Codex does not provide an executable custom status-line hook.
