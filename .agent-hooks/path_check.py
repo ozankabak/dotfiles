@@ -39,7 +39,7 @@ import re
 import shlex
 import sys
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator
 
 TMP_ROOTS = {Path("/tmp").resolve(), Path("/private/tmp").resolve()}
 if tmpdir := os.environ.get("TMPDIR"):
@@ -136,7 +136,7 @@ def _is_sensitive_workspace_path(resolved: Path, root: Path) -> bool:
     )
 
 
-def inside(p: str, root: Path, agent: str) -> Optional[str]:
+def inside(p: str, root: Path, agent: str) -> str | None:
     """Check if a path resolves within sandbox boundaries.
 
     Args:
@@ -285,7 +285,7 @@ def _neutralize_escapes(cmd: str) -> str:
     return "".join(out)
 
 
-def check(cmd: str, root: Path, agent: str) -> Optional[str]:
+def check(cmd: str, root: Path, agent: str) -> str | None:
     """Validate a shell command accesses only sandbox-safe paths.
 
     Args:
