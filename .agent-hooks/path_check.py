@@ -123,7 +123,7 @@ def _is_sensitive_workspace_path(resolved: Path, root: Path) -> bool:
         root: Resolved workspace root.
 
     Returns:
-        True when the path is a protected workspace file or directory.
+        ``True`` when the path is a protected workspace file or directory.
     """
     try:
         relative = resolved.relative_to(root)
@@ -146,7 +146,7 @@ def inside(p: str, root: Path, agent: str) -> str | None:
         agent: Agent name selecting the state directory.
 
     Returns:
-        None if safe, otherwise the expanded path string for error messages.
+        ``None`` if safe, otherwise the expanded path string for error messages.
     """
     if (
         not p
@@ -292,10 +292,10 @@ def check(cmd: str, root: Path, agent: str) -> str | None:
     Args:
         cmd: Shell command string.
         root: Project root defining sandbox boundary.
-        agent: Agent name selecting the permitted state directory.
+        agent: Agent name selecting the state directory.
 
     Returns:
-        Error message if violation found, None if safe.
+        Error message if violation found, ``None`` if safe.
     """
     # Recurse into subcommands:
     for sub in subcommands(cmd):
@@ -323,6 +323,9 @@ def check(cmd: str, root: Path, agent: str) -> str | None:
 
 def main() -> None:
     """Read a hook payload and emit the permission decision.
+
+    Writes:
+        The agent-specific JSON decision to standard output.
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--agent", choices=sorted(AGENT_HOMES), required=True)
