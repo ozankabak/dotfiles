@@ -111,7 +111,8 @@ workspace-write sandbox and do not have an equivalent per-read deny. The generat
 allow, prompt, and forbidden command decisions through Codex's native
 execution-policy engine. Codex has native support for the imported
 `clangd-lsp@claude-plugins-official` plugin; Codex reports it as installed and
-enabled. Codex does not provide an executable custom status-line hook. The external
+enabled. Run `scripts/install-codex-plugins.sh` after deployment to configure the
+marketplace and install it reproducibly. Codex does not provide an executable custom status-line hook. The external
 macOS sandbox wrapper must run Codex in external-sandbox mode to avoid unsupported
 nested macOS sandboxes.
 
