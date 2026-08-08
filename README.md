@@ -86,6 +86,8 @@ This setup consists of three layers:
 - For Codex, that hook also rejects shell access to workspace `.env`/`.env.*`,
   `*secret*`, `.ssh`, `.aws`, and `.gnupg` paths. The outer `agent-sandbox`
   profile denies reads of the same paths for sandboxed runs.
+- Claude-only login-Keychain permissions are included only for Claude runs;
+  Codex receives no dedicated Keychain file or SecurityServer access.
 - The permissions layer in Claude's `settings.json` and Codex's `.codex/rules/default.rules` controls prompting UX rather than security: it auto-approves common development commands (coreutils, git, build tools, compilers, linters, network utilities) for seamless workflow, requires confirmation for operations affecting remote systems (`git push`, package publishing, `docker`, GitHub write operations), and outright blocks dangerous patterns (`sudo`/`su`, force push, repository deletion) and sensitive file reads (.env, secrets,
   credentials).
 

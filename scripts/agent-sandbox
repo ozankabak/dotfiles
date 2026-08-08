@@ -210,22 +210,7 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
   (global-name "com.apple.system.opendirectoryd.libinfo")
   (global-name "com.apple.system.opendirectoryd.membership")
   (global-name "com.apple.bsd.dirhelper")
-  (global-name "com.apple.securityd.xpc")
   (global-name "com.apple.coreservices.launchservicesd")
-)
-
-;; Claude requires the following to get its API key from macOS Keychain when logged in via /login.
-
-;; Specifically allow login keychain
-(allow file-read*
-    (literal (string-append (param "HOME_DIR") "/Library/Keychains/login.keychain-db"))
-)
-
-;; Critical: Allow communication with securityd (keychain daemon)
-(allow mach-lookup
-    (global-name "com.apple.SecurityServer")
-    (global-name "com.apple.securityd")
-    (global-name "com.apple.securityd.xpc")
 )
 
 ;; Java/Scala development permissions
@@ -312,6 +297,18 @@ read -r -d '' NOREAD_SB_CONTENT <<'INNER_EOF'
 (allow file-read*
     (subpath (string-append (param "HOME_DIR") "/Library/Java"))
     (subpath "/Library/Java")
+)
+INNER_EOF
+
+read -r -d '' CLAUDE_KEYCHAIN_SB_CONTENT <<'INNER_EOF'
+;; Claude requires these rules to retrieve a Keychain-backed API key after /login.
+(allow file-read*
+    (literal (string-append (param "HOME_DIR") "/Library/Keychains/login.keychain-db"))
+)
+(allow mach-lookup
+    (global-name "com.apple.SecurityServer")
+    (global-name "com.apple.securityd")
+    (global-name "com.apple.securityd.xpc")
 )
 INNER_EOF
 
@@ -458,11 +455,13 @@ case "${AGENT}" in
         AGENT_STATE_DIR="${HOME}/.claude"
         AGENT_CONFIG_FILE="${HOME}/.claude.json"
         AGENT_CONFIG_BACKUP_FILE="${HOME}/.claude.json.backup"
+        AGENT_PROFILE_EXTRA="${CLAUDE_KEYCHAIN_SB_CONTENT}"
         ;;
     codex)
         AGENT_STATE_DIR="${CODEX_HOME:-${HOME}/.codex}"
         AGENT_CONFIG_FILE="${AGENT_STATE_DIR}/config.toml"
         AGENT_CONFIG_BACKUP_FILE="${AGENT_CONFIG_FILE}"
+        AGENT_PROFILE_EXTRA=""
         ;;
     *)
         printf 'Error: Unsupported agent %q; expected claude or codex.\n' "${AGENT}" >&2
@@ -489,6 +488,7 @@ if [[ "${NO_WORKAROUND}" == 0 ]]; then
     # append generated rules
     {
         echo "${NOREAD_SB_CONTENT}"
+        echo "${AGENT_PROFILE_EXTRA}"
         echo ""
         echo ";; Generated allow-read rules for: ${TARGET_DIR}"
         echo ";; some agents need list access to all parent directories of TARGET_DIR"
@@ -497,7 +497,10 @@ if [[ "${NO_WORKAROUND}" == 0 ]]; then
         echo "${WORKAROUND_RULES}"
     } > "${WRITE_PROFILE_FILE}"
 else
-    echo "${NOREAD_SB_CONTENT}" > "${WRITE_PROFILE_FILE}"
+    {
+        echo "${NOREAD_SB_CONTENT}"
+        echo "${AGENT_PROFILE_EXTRA}"
+    } > "${WRITE_PROFILE_FILE}"
 fi
 
 # Trap to clean up the temp file on exit
