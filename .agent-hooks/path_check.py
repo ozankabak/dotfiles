@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Validate Claude and Codex shell commands against the shared path policy.
+"""Validate Claude and Codex shell commands against one common path policy.
 
-This hook checks that all file paths in Bash commands resolve within the
-project directory or /tmp. It handles redirects, flag-embedded paths,
-tilde expansion, environment variables, and nested subcommands.
+This hook checks that all file paths in Bash commands resolve within the project
+directory or /tmp. It handles redirects, paths in flags (e.g. -I/usr/include),
+tilde expansion, environment variables, and subcommands.
 
 Usage:
     Claude ~/.claude/settings.json:
@@ -33,13 +33,14 @@ Usage:
         }
 """
 
+import argparse
 import json
 import os
 import re
 import shlex
 import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 TMP_ROOTS = {Path("/tmp").resolve(), Path("/private/tmp").resolve()}
 if tmpdir := os.environ.get("TMPDIR"):
@@ -142,19 +143,19 @@ def inside(p: str, root: Path, agent: str) -> str | None:
     Args:
         p: Path string to validate (may contain ``~`` or ``$VAR``).
         root: Project root defining the sandbox.
-        agent: Agent name selecting the permitted state directory.
+        agent: Agent name selecting the state directory.
 
     Returns:
         None if safe, otherwise the expanded path string for error messages.
     """
-    if not p:
-        return None
-    elif (expanded := _expand(p)) in _DEV_OK:
-        return None
-    elif (Path(expanded).resolve()).is_relative_to(AGENT_HOMES[agent]):
-        return None
-    # Flags without embedded paths are OK:
-    elif expanded.startswith("-") and "/" not in expanded and "~" not in expanded:
+    if (
+        not p
+        or (expanded := _expand(p)) in _DEV_OK
+        or (Path(expanded).resolve()).is_relative_to(AGENT_HOMES[agent])
+        or expanded.startswith("-")
+        and "/" not in expanded
+        and "~" not in expanded
+    ):
         return None
 
     try:
@@ -320,28 +321,50 @@ def check(cmd: str, root: Path, agent: str) -> str | None:
     return None
 
 
-def main() -> None:
-    """Read a hook payload and emit the selected agent's permission decision.
+def parse_args() -> argparse.Namespace:
+    """Parse hook command-line arguments.
 
     Returns:
-        None. The decision is written as JSON to standard output.
+        Parsed hook options.
     """
-    if len(sys.argv) != 3 or sys.argv[1] != "--agent" or sys.argv[2] not in AGENT_HOMES:
-        raise SystemExit("Usage: path_check.py --agent <claude|codex>")
-    agent = sys.argv[2]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--agent", choices=sorted(AGENT_HOMES), required=True)
+    return parser.parse_args()
+
+
+def main() -> None:
+    """Read a hook payload and emit the permission decision.
+
+    Returns:
+        None. The decision is written in JSON format to standard output.
+    """
+    agent = parse_args().agent
     payload = json.load(sys.stdin)
     cmd = payload.get("tool_input", {}).get("command", "")
     env_value = os.environ.get(f"{agent.upper()}_PROJECT_DIR")
     root = Path(env_value or payload.get("cwd", ".")).resolve()
 
     if agent == "claude":
-        output = {"decision": "approve"}
         if err := check(cmd, root, agent):
             output = {"decision": "block", "reason": err}
+        else:
+            output = {"decision": "approve"}
     else:
-        output = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}
         if err := check(cmd, root, agent):
-            output = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": err}}
+            output = {
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": "deny",
+                    "permissionDecisionReason": err,
+                }
+            }
+        else:
+            output = {
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": "allow",
+                }
+            }
     json.dump(output, sys.stdout)
 
 
