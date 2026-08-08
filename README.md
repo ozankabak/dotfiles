@@ -5,10 +5,12 @@ This repository includes the configuration files I use for terminal applications
 ## Fonts and Icons
 
 In order to use the VIM plug-in [`vim-devicons`](https://github.com/ryanoasis/vim-devicons) and avoid icon/font display issues while decorating the tmux status bar, one needs to install [`Nerd Fonts`](https://github.com/ryanoasis/nerd-fonts). For macOS users, installation via Homebrew is simple:
+
 ```
 brew tap homebrew/cask-fonts
 brew install font-hack-nerd-font
 ```
+
 Linux users should consult the Nerd Fonts repository for installation details.
 
 ## iTerm2 Notes
@@ -18,6 +20,7 @@ I use a fairly simple iTerm2 profile that re-defines some useful key mappings fr
 ## Common Terminal Utilities
 
 I use the `lsd` utility instead of the default one. For macOS users, installation via Homebrew is as follows:
+
 ```
 brew install lsd
 ```
@@ -25,10 +28,13 @@ brew install lsd
 ## Python
 
 I use a virtual environment, `pyenv`, to manage Python versions and packages and avoid cluttering system Python installations. To set up the virtual environment, use
+
 ```
 python3 -m venv ~/pyenv
 ```
+
 Do not forget to upgrade the virtual environment after upgrading Python:
+
 ```
 python3 -m venv --upgrade ~/pyenv
 ```
@@ -38,10 +44,12 @@ python3 -m venv --upgrade ~/pyenv
 ### Plug-in Management
 
 I use [`vim-plug`](https://github.com/junegunn/vim-plug) for managing VIM plug-ins. The `.vimrc` file should take care of bootstrapping `vim-plug` if it isn't there already. However, if you run into issues you can manually set it up via:
+
 ```
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ```
+
 If `vim-plug` is installed manually, you will also need to issue the VIM command `:PlugUpdate` manually to fetch and install the actual plug-ins.
 
 ### Ctags
@@ -55,6 +63,7 @@ Out of the box, [`ALE`](https://github.com/w0rp/ale) tries to auto-detect and en
 ### FZF
 
 I generally use [`FZF`](https://github.com/junegunn/fzf.vim) for searching. I also use [`ag`](https://github.com/ggreer/the_silver_searcher), which the FZF plug-in also supports. Fellow macOS users can use Homebrew to install `ag` via:
+
 ```
 brew install the_silver_searcher
 ```
@@ -66,6 +75,7 @@ I use a custom script (`scripts/tmux-select-pane`) to facilitate seamless moveme
 ## Agent Sandboxing
 
 I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access to the current directory and read-only access to the necessary system directories (more below). The `claude` and `codex` aliases run their respective agent through this sandbox. See [this repository](https://github.com/neko-kai/claude-code-sandbox) for more details. Mind the following:
+
 - This is macOS-specific, and Linux will require a different approach.
 - We do not rely on an inner agent sandbox: Claude disables its built-in sandbox, while Codex runs with `--sandbox danger-full-access`. The outer macOS sandbox remains the enforcing boundary because macOS does not support nested `sandbox-exec` profiles. Unlike the dangerous bypass flag, this retains Codex's migrated allow/prompt/forbidden rules.
 - There was a bug in the upstream `sandbox-exec` utility due to macOS's `realpath` not supporting the `-m` flag, so I changed the line
@@ -81,6 +91,7 @@ I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access t
 ### Permissions/Access Model
 
 This setup consists of three layers:
+
 - The primary security boundary is an OS-level macOS sandbox (`sandbox-exec`) that restricts file reads to the current working directory and system paths, limits writes to the project directory, `/tmp`, select caches, and the selected agent's state directory (`~/.claude` or `~/.codex`), while permitting full network access.
 - A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside the sandbox boundaries, catching many mistakes before they hit the OS sandbox.
 - For Codex, that hook also rejects shell access to workspace `.env`/`.env.*`,
