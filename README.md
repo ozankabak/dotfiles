@@ -77,7 +77,7 @@ I use a custom script (`scripts/tmux-select-pane`) to facilitate seamless moveme
 I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access to the current directory and read-only access to the necessary system directories (more below). The `claude` and `codex` aliases run their respective agent through this sandbox. See [this repository](https://github.com/neko-kai/claude-code-sandbox) for more details. Mind the following:
 
 - This is macOS-specific, and Linux will require a different approach.
-- We do not rely on an inner agent sandbox: Claude disables its built-in sandbox, while Codex runs with `--sandbox danger-full-access`. The outer macOS sandbox remains the enforcing boundary because macOS does not support nested `sandbox-exec` profiles. Unlike the dangerous bypass flag, this retains Codex's migrated allow/prompt/forbidden rules.
+- We do not rely on the agent's own sandbox: Claude disables its built-in sandbox, while Codex runs with `--sandbox danger-full-access`. The outer macOS sandbox remains the enforcing boundary because macOS does not support nesting `sandbox-exec` profiles.
 - There was a bug in the upstream `sandbox-exec` utility due to macOS's `realpath` not supporting the `-m` flag, so I changed the line
   ```
   TARGET_DIR="$(realpath -m "${TARGET_DIR}" 2>/dev/null)"
@@ -92,49 +92,16 @@ I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access t
 
 This setup consists of three layers:
 
-- The primary security boundary is an OS-level macOS sandbox (`sandbox-exec`) that restricts file reads to the current working directory and system paths, limits writes to the project directory, `/tmp`, select caches, and the selected agent's state directory (`~/.claude` or `~/.codex`), while permitting full network access.
-- A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside the sandbox boundaries, catching many mistakes before they hit the OS sandbox.
-- For Codex, that hook also rejects shell access to workspace `.env`/`.env.*`,
-  `*secret*`, `.ssh`, `.aws`, and `.gnupg` paths. The outer `agent-sandbox`
-  profile denies reads of the same paths for sandboxed runs.
-- Claude-only login-Keychain permissions are included only for Claude runs;
-  Codex receives no dedicated Keychain file or SecurityServer access.
-- Claude's `settings.json` and Codex's `.codex/rules/default.rules` control
-  command prompting rather than filesystem security: they auto-approve common
-  development commands, require confirmation for remote-affecting operations,
-  and block dangerous command patterns such as `sudo`, force pushes, and
-  repository deletion. Claude also blocks its configured sensitive-file reads;
-  Codex applies those path protections through its hook and outer wrapper.
+- The primary security boundary is an OS-level macOS sandbox (`sandbox-exec`) that restricts file reads to the current working directory and system paths, limits writes to the project directory, `/tmp`, select caches, and the agent's state directory (`~/.claude` or `~/.codex`), while permitting full network access.
+- A pre-execution hook (`path_check.py`) provides friendly error messages when commands reference paths outside sandbox boundaries, catching many mistakes before they hit the OS sandbox.
+- For Codex, that hook also rejects shell access to workspace `.env`/`.env.*`, `*secret*`, `.ssh`, `.aws`, and `.gnupg` paths. The outer `agent-sandbox` profile also denies reads of the same paths.
+- The `agent-sandbox` script provides the necessary login-Keychain permissions for Claude runs.
+- Claude's `settings.json` and Codex's `.codex/rules/default.rules` control command prompting rather than filesystem security: they auto-approve common development commands, require confirmation for remote-affecting operations, and block dangerous command patterns such as `sudo`, force pushes, and repository deletion. Claude also blocks sensitive-file reads; Codex applies those path protections through its hook and the sandbox.
 
 The aim is to prioritize development productivity by eliminating prompts for safe local operations while maintaining human oversight for irreversible or remote-affecting actions, with the OS sandbox as the ultimate safety net.
 
-## Codex
+### Codex
 
-The `.codex` directory is the corresponding global Codex configuration. It selects
-`gpt-5.6-sol` with high reasoning effort, disables client analytics, enables live
-web search, and uses Codex's workspace-write sandbox with network access. It also
-uses the same path-validation policy as the Claude configuration through a native
-Codex `PreToolUse` hook. The hook is automatically discovered from
-`~/.codex/hooks.json`; the shared implementation lives at
-`~/.agent-hooks/path_check.py`. Review and trust it with Codex's `/hooks` command after
-installing or changing it.
-
-The `.codex/rules/default.rules` file is generated from Claude's Bash permissions
-with `scripts/generate-codex-rules.py`; check it for drift with
-`scripts/verify-codex-rules.sh`. Codex execution-policy rules cannot represent
-Claude's non-command `Read` and `Edit` permissions. The sensitive-file read
-denies are instead enforced for shell access by the Codex hook and for all file
-access when using `agent-sandbox`; direct Codex runs still rely on its
-workspace-write sandbox and do not have an equivalent per-read deny. The generated rules preserve
-allow, prompt, and forbidden command decisions through Codex's native
-execution-policy engine. Codex has native support for the imported
-`clangd-lsp@claude-plugins-official` plugin; Codex reports it as installed and
-enabled. Run `scripts/install-codex-plugins.sh` after deployment to configure the
-marketplace and install it reproducibly; if the plugin is installed but disabled,
-the script reinstalls it. Codex does not provide an executable custom status-line hook. The external
-macOS sandbox wrapper must run Codex in external-sandbox mode to avoid unsupported
-nested macOS sandboxes.
-
-Run `scripts/test-agent-sandbox-sensitive.sh` directly on the macOS host to
-verify the external profile's sensitive-file denies; it cannot run from an
-existing `sandbox-exec` session.
+- The `scripts/generate-codex-rules.py` script generates `.codex/rules/default.rules` from Claude's Bash permissions; check it for drift with `scripts/verify-codex-rules.sh`. Generated rules preserve `allow`, `prompt`, and `forbidden` decisions through Codex's native execution-policy engine. Note that Codex's execution-policy rules cannot represent Claude's `Read` and `Edit` permissions, so Codex relies on `path_check.py` and the `agent-sandbox` script to enforce sensitive-file checks.
+- Codex has native support for the imported `clangd-lsp@claude-plugins-official` plugin. Run `scripts/install-codex-plugins.sh` after deployment to configure the marketplace and install it reproducibly.
+- Codex does not provide an executable custom status-line hook.
