@@ -21,14 +21,15 @@ TARGETS = {
 
 
 def render(template: str, variables: dict[str, str]) -> str:
-    """Substitute the supported template variables.
+    """Substitute the template variables into the given string.
 
     Args:
-        template: Shared instruction template text.
+        template: The instruction template text.
         variables: Template-variable names and their replacement values.
 
     Returns:
-        Rendered instruction text.
+        The resulting instruction text, containing specific values for each
+        template variable.
     """
     for variable, value in variables.items():
         template = template.replace(f"{{{{ {variable} }}}}", value)
@@ -36,11 +37,7 @@ def render(template: str, variables: dict[str, str]) -> str:
 
 
 def main() -> None:
-    """Render both tracked instruction files.
-
-    Returns:
-        None. The rendered files are written to their tracked locations.
-    """
+    """Render and write both instruction files."""
     template = TEMPLATE.read_text()
     for target, variables in TARGETS.items():
         target.write_text(render(template, variables))
