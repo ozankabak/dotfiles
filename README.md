@@ -88,8 +88,12 @@ This setup consists of three layers:
   profile denies reads of the same paths for sandboxed runs.
 - Claude-only login-Keychain permissions are included only for Claude runs;
   Codex receives no dedicated Keychain file or SecurityServer access.
-- The permissions layer in Claude's `settings.json` and Codex's `.codex/rules/default.rules` controls prompting UX rather than security: it auto-approves common development commands (coreutils, git, build tools, compilers, linters, network utilities) for seamless workflow, requires confirmation for operations affecting remote systems (`git push`, package publishing, `docker`, GitHub write operations), and outright blocks dangerous patterns (`sudo`/`su`, force push, repository deletion) and sensitive file reads (.env, secrets,
-  credentials).
+- Claude's `settings.json` and Codex's `.codex/rules/default.rules` control
+  command prompting rather than filesystem security: they auto-approve common
+  development commands, require confirmation for remote-affecting operations,
+  and block dangerous command patterns such as `sudo`, force pushes, and
+  repository deletion. Claude also blocks its configured sensitive-file reads;
+  Codex applies those path protections through its hook and outer wrapper.
 
 The aim is to prioritize development productivity by eliminating prompts for safe local operations while maintaining human oversight for irreversible or remote-affecting actions, with the OS sandbox as the ultimate safety net.
 
@@ -114,7 +118,8 @@ allow, prompt, and forbidden command decisions through Codex's native
 execution-policy engine. Codex has native support for the imported
 `clangd-lsp@claude-plugins-official` plugin; Codex reports it as installed and
 enabled. Run `scripts/install-codex-plugins.sh` after deployment to configure the
-marketplace and install it reproducibly. Codex does not provide an executable custom status-line hook. The external
+marketplace and install it reproducibly; if the plugin is installed but disabled,
+the script reinstalls it. Codex does not provide an executable custom status-line hook. The external
 macOS sandbox wrapper must run Codex in external-sandbox mode to avoid unsupported
 nested macOS sandboxes.
 

@@ -14,9 +14,17 @@ if ! jq -e --arg name "$MARKETPLACE" \
 fi
 
 plugins="$(codex plugin list --json)"
-if ! jq -e --arg plugin "$PLUGIN" \
+if jq -e --arg plugin "$PLUGIN" \
     '.installed[] | select(.pluginId == $plugin and .enabled)' >/dev/null <<<"$plugins"; then
-    codex plugin add "$PLUGIN"
+    echo "Codex plugin setup is current: $PLUGIN"
+    exit 0
 fi
+
+if jq -e --arg plugin "$PLUGIN" \
+    '.installed[] | select(.pluginId == $plugin)' >/dev/null <<<"$plugins"; then
+    codex plugin remove "$PLUGIN"
+fi
+
+codex plugin add "$PLUGIN"
 
 echo "Codex plugin setup is current: $PLUGIN"
