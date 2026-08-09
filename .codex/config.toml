@@ -4,9 +4,9 @@ model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 analytics.enabled = false
 
-# Execute only the allowlist without a prompt. Commands outside that list
-# prompt, while `.codex/rules/default.rules` can require a prompt or deny more-specific command prefixes.
-approval_policy = "untrusted"
+# Let Codex edit the workspace without automatic approval prompts. Explicit
+# `.codex/rules/default.rules` decisions still control command behavior.
+approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 web_search = "live"
 
