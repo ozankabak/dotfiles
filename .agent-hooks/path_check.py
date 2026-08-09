@@ -351,12 +351,7 @@ def main() -> None:
                 }
             }
         else:
-            output = {
-                "hookSpecificOutput": {
-                    "hookEventName": "PreToolUse",
-                    "permissionDecision": "allow",
-                }
-            }
+            return
     json.dump(output, sys.stdout)
 
 
