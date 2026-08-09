@@ -103,11 +103,8 @@ else
 fi
 
 expect_profile_contains 0 "includes local sensitive-file policy" "Prevent sensitive-file reads"
-if [[ "$AGENT" == "claude" ]]; then
-    expect_profile_contains 0 "includes Claude Keychain grant" "login.keychain-db"
-else
-    expect_profile_contains 1 "omits Claude Keychain grant" "login.keychain-db"
-fi
+expect_profile_contains 0 "includes ${AGENT} Keychain grant" "login.keychain-db"
+expect_profile_contains 0 "includes ${AGENT} securityd grant" "com.apple.securityd"
 
 echo ""
 echo "=== Workspace Access ==="

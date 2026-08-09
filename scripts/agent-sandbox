@@ -151,16 +151,14 @@ if [[ "${AGENT}" == "auto" ]]; then
     esac
 fi
 case "${AGENT}" in
-    claude)
-        # Claude requires these rules to retrieve a Keychain-backed API key after /login.
+    claude|codex)
+        # Claude retrieves its Keychain-backed API key after /login; Codex uses
+        # the login Keychain to validate this network's trusted certificate issuer.
         AGENT_PROFILE_EXTRA="$(cat <<'PROFILE_EOF'
 (allow file-read* (literal (string-append (param "HOME_DIR") "/Library/Keychains/login.keychain-db")))
 (allow mach-lookup (global-name "com.apple.SecurityServer") (global-name "com.apple.securityd") (global-name "com.apple.securityd.xpc"))
 PROFILE_EOF
 )"
-        ;;
-    codex)
-        AGENT_PROFILE_EXTRA=""
         ;;
     *) printf 'Error: Unsupported agent %q; expected claude or codex.\n' "${AGENT}" >&2; exit 1 ;;
 esac
