@@ -103,8 +103,7 @@ The aim is to prioritize development productivity by eliminating prompts for saf
 ### Codex
 
 - The `scripts/generate-codex-rules.py` script generates `.codex/rules/default.rules` from Claude's Bash permissions. When changing `.claude/settings.json`, regenerate the rules and review the two files together. Generated rules preserve `allow`, `prompt`, and `forbidden` decisions through Codex's native execution-policy engine. Note that Codex's execution-policy rules cannot represent Claude's `Read` and `Edit` permissions, so Codex relies on `path_check.py` and the `agent-sandbox` script to enforce sensitive-file checks.
-- The generator prints every non-Bash Claude permission it omits, along with the summary counts, so review its output whenever `.claude/settings.json` changes.
-- Codex has native support for the imported `clangd-lsp@claude-plugins-official` plugin. Run `scripts/install-codex-plugins.sh` after deployment, or whenever the Claude plugin settings change, to configure the marketplace and install or repair the plugin reproducibly.
+- The generator prints every non-Bash Claude permission it omits, with the count in each category heading, so review its output whenever `.claude/settings.json` changes.
 - Codex does not provide an executable custom status-line hook.
 
 ### Agent Instructions
