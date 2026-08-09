@@ -426,7 +426,9 @@
       "Bash(su:*)",
       "Read(**/.env)",
       "Read(**/.env.*)",
-      "Read(**/*secret*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa*)",
       "Read(**/.ssh/**)",
       "Read(**/.aws/**)",
       "Read(**/.gnupg/**)",
@@ -447,7 +449,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/path_check.py"
+            "command": "python3 ~/.agent-hooks/path_check.py --agent claude"
           }
         ]
       }

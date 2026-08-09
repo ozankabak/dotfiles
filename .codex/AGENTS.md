@@ -1,15 +1,15 @@
-# CLAUDE.md - Universal Project Guidelines
+# AGENTS.md - Universal Project Guidelines
 
-This document contains instructions and guidelines for Claude instances working on software development projects.
+This document contains instructions and guidelines for Codex instances working on software development projects.
 
-**Override mechanism**: If a project contains its own `CLAUDE.md` file, those project-specific instructions take precedence. When conflicts exist, follow the project-specific instructions.
+**Override mechanism**: If a project contains its own `AGENTS.md` file, those project-specific instructions take precedence. When conflicts exist, follow the project-specific instructions.
 
 ## Sandbox Environment
 
 You operate in a macOS `sandbox-exec` environment with restricted file access:
 
 - **Read Access**: Project directory, system paths (read-only)
-- **Write Access**: Project directory, `/tmp`, `~/.cache`, `~/.claude`
+- **Write Access**: Project directory, `/tmp`, `~/.cache`, `~/.codex`
 - **Network**: Full access
 - **Blocked**: Paths outside the above, sensitive files (`.env`, credentials, secrets)
 
@@ -17,7 +17,7 @@ Do not attempt to access files outside these boundaries - commands will fail (of
 
 ## Multi-Instance Workflow (Worktrees & PRs)
 
-Multiple Claude instances may work on the same repository concurrently. Follow this workflow:
+Multiple Codex instances may work on the same repository concurrently. Follow this workflow:
 
 ### Setup (once per repository)
 ```bash

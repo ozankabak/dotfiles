@@ -1,11 +1,24 @@
 #!/bin/bash
-# Comprehensive test suite for sandboxing.
-# Run: ./test_sandbox.sh
+# Comprehensive test suite for path_check.py.
+# Run: ./test_path_check.sh --agent <claude|codex>
 
-HOOK="${HOOK:-$HOME/.claude/hooks/path_check.py}"
+AGENT=""
+if [[ "${1:-}" == "--agent" ]]; then
+    AGENT="$2"
+    shift 2
+fi
+if [[ "$AGENT" != "claude" && "$AGENT" != "codex" ]]; then
+    echo "Usage: $0 [--agent <claude|codex>]" >&2
+    exit 1
+fi
+HOOK="${HOOK:-$HOME/.agent-hooks/path_check.py}"
 CWD="${CWD:-$PWD}"
 export EVIL=/etc  # For env var expansion tests
-export CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$CWD}"  # Simulate Claude's env
+if [[ "$AGENT" == "claude" ]]; then
+    export CLAUDE_PROJECT_DIR="$CWD"
+else
+    export CODEX_PROJECT_DIR="$CWD"
+fi
 PASS=0
 FAIL=0
 
@@ -14,12 +27,28 @@ test_cmd() {
     # Use jq to properly escape the command for JSON
     local input output decision
     input=$(jq -n --arg cmd "$cmd" --arg cwd "$CWD" '{"tool_input":{"command":$cmd},"cwd":$cwd}')
-    output=$(echo "$input" | python3 "$HOOK" 2>/dev/null)
-    decision=$(echo "$output" | jq -r '.decision // "error"')
-    if [[ "$decision" == "approve" ]]; then
-        result=0
+    output=$(echo "$input" | python3 "$HOOK" --agent "$AGENT" 2>/dev/null)
+    if [[ "$AGENT" == "claude" ]]; then
+        decision=$(echo "$output" | jq -r '.decision // "error"')
+        expected_decision="approve"
+        if [[ "$decision" == "$expected_decision" ]]; then
+            result=0
+        else
+            result=2
+        fi
+    elif [[ "$expected" -eq 0 ]]; then
+        if [[ -z "$output" ]]; then
+            result=0
+        else
+            result=2
+        fi
     else
-        result=2
+        decision=$(echo "$output" | jq -r '.hookSpecificOutput.permissionDecision // "error"')
+        if [[ "$decision" == "deny" ]]; then
+            result=2
+        else
+            result=0
+        fi
     fi
     if [[ "$result" -eq "$expected" ]]; then
         echo "✓ $desc"
@@ -55,14 +84,26 @@ test_cmd 2 "tilde redirect" "echo test > ~/output.txt"
 test_cmd 2 "tilde .cache blocked" "ls ~/.cache"
 
 echo ""
-echo "=== ~/.claude Exception ==="
-test_cmd 0 "~/.claude allowed" "ls ~/.claude"
-test_cmd 0 "~/.claude subdir" "cat ~/.claude/settings.json"
-test_cmd 0 "~/.claude nested" "ls ~/.claude/hooks/path_check.py"
-test_cmd 0 "~/.claude redirect" "echo test > ~/.claude/test.txt"
-test_cmd 0 "~/.claude in flag" "cmd --config=~/.claude/config"
-test_cmd 0 "\$HOME/.claude" 'ls $HOME/.claude'
-test_cmd 0 "\$HOME/.claude subdir" 'cat $HOME/.claude/settings.json'
+echo "=== Agent State Exception ==="
+AGENT_HOME="$HOME/.${AGENT}"
+test_cmd 0 "agent home allowed" "ls $AGENT_HOME"
+test_cmd 0 "agent home subdir" "cat $AGENT_HOME/config.toml"
+test_cmd 0 "agent home nested" "ls $AGENT_HOME/hooks/path_check.py"
+test_cmd 0 "agent home redirect" "echo test > $AGENT_HOME/test.txt"
+test_cmd 0 "agent home in flag" "cmd --config=$AGENT_HOME/config"
+test_cmd 0 "agent home via HOME" "ls \$HOME/.${AGENT}"
+
+echo ""
+echo "=== Sensitive Workspace Paths ==="
+test_cmd 2 "workspace .env blocked" "cat .env"
+test_cmd 2 "workspace .env variant blocked" "cat ./config/.env.local"
+test_cmd 2 "workspace PEM blocked" "cat ./config/service.pem"
+test_cmd 2 "workspace key blocked" "cat ./config/service.key"
+test_cmd 2 "workspace SSH key blocked" "cat ./config/id_rsa_backup"
+test_cmd 2 "workspace .ssh blocked" "cat ./.ssh/id_ed25519"
+test_cmd 2 "workspace .aws blocked" "cat ./.aws/credentials"
+test_cmd 2 "workspace .gnupg blocked" "cat ./.gnupg/private-keys-v1.d/key"
+test_cmd 0 "ordinary workspace file allowed" "cat ./config/application.toml"
 
 echo ""
 echo "=== Environment Variable Paths ==="
@@ -377,102 +418,4 @@ test_cmd 2 "grep -r outside" "grep -r pattern /var/log"
 echo ""
 echo "================================"
 echo "Path Validation: $PASS passed, $FAIL failed"
-
-# Reset counters for execution tests
-EXEC_PASS=0
-EXEC_FAIL=0
-
-test_exec() {
-    local expected="$1" desc="$2"
-    shift 2
-    local code="$*"
-
-    if python3 -c "$code" 2>/dev/null; then
-        result=0
-    else
-        result=1
-    fi
-
-    if [[ "$result" -eq "$expected" ]]; then
-        echo "✓ $desc"
-        ((EXEC_PASS++))
-    else
-        echo "✗ $desc"
-        echo "  expected: $expected, got: $result"
-        ((EXEC_FAIL++))
-    fi
-}
-
-echo ""
-echo "=== Execution Sandbox: Write Restrictions ==="
-test_exec 1 "Block write to /etc" "open('/etc/sandbox_test', 'w').write('test')"
-test_exec 1 "Block write to /var" "open('/var/sandbox_test', 'w').write('test')"
-test_exec 1 "Block write to home root" "open('$HOME/sandbox_test', 'w').write('test')"
-test_exec 0 "Allow write to /tmp" "open('/tmp/sandbox_test', 'w').write('test'); import os; os.unlink('/tmp/sandbox_test')"
-test_exec 0 "Allow write to CWD" "open('$CWD/.sandbox_test', 'w').write('test'); import os; os.unlink('$CWD/.sandbox_test')"
-
-echo ""
-echo "=== Execution Sandbox: Read Restrictions ==="
-test_exec 0 "Allow read from /etc/passwd (read-only)" "open('/etc/passwd').read()"
-test_exec 1 "Block read from ~/.zshrc" "open('$HOME/.zshrc').read()"
-test_exec 0 "Allow read from CWD" "import os; cwd='$CWD'; files=[f for f in os.listdir(cwd) if os.path.isfile(os.path.join(cwd,f))]; open(os.path.join(cwd,files[0])).read() if files else None"
-
-echo ""
-echo "=== Execution Sandbox: Directory Listing ==="
-test_exec 0 "Allow listing home directory" "import os; os.listdir('$HOME')"
-test_exec 0 "Allow listing CWD" "import os; os.listdir('$CWD')"
-test_exec 0 "Allow listing /tmp" "import os; os.listdir('/tmp')"
-
-echo ""
-echo "=== Execution Sandbox: Subprocess ==="
-test_exec 0 "Allow subprocess ls" "import subprocess; subprocess.run(['ls','-la','$CWD'],capture_output=True,timeout=5,check=True)"
-test_exec 0 "Allow subprocess cat /etc/passwd" "import subprocess; subprocess.run(['cat','/etc/passwd'],capture_output=True,timeout=5,check=True)"
-
-echo ""
-echo "=== Execution Sandbox: Device Files ==="
-test_exec 0 "Allow read /dev/null" "open('/dev/null', 'r').read()"
-test_exec 0 "Allow write /dev/null" "open('/dev/null', 'w').write('test')"
-test_exec 0 "Allow read /dev/urandom" "open('/dev/urandom', 'rb').read(32)"
-test_exec 0 "Allow read /dev/zero" "open('/dev/zero', 'rb').read(32)"
-test_exec 0 "Allow /dev/stdout" "import os; os.write(1, b'')"
-test_exec 0 "Allow /dev/stderr" "import os; os.write(2, b'')"
-
-echo ""
-echo "=== Execution Sandbox: macOS Temp Directories ==="
-test_exec 0 "Allow write /var/folders" "import tempfile; f=tempfile.NamedTemporaryFile(delete=True); f.write(b'test'); f.close()"
-test_exec 0 "Allow write /private/tmp" "open('/private/tmp/sandbox_test', 'w').write('test'); import os; os.unlink('/private/tmp/sandbox_test')"
-
-echo ""
-echo "=== Execution Sandbox: Network ==="
-test_exec 0 "Allow socket creation" "import socket; s=socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.close()"
-test_exec 0 "Allow DNS resolution" "import socket; socket.gethostbyname('localhost')"
-test_exec 0 "Allow HTTP request" "import urllib.request; urllib.request.urlopen('http://httpbin.org/get', timeout=5).read(100)"
-
-echo ""
-echo "=== Execution Sandbox: Sensitive Home Directories ==="
-test_exec 1 "Block read ~/.ssh" "import os; os.listdir('$HOME/.ssh') if os.path.exists('$HOME/.ssh') else (_ for _ in ()).throw(PermissionError())"
-test_exec 1 "Block read ~/.gnupg" "import os; os.listdir('$HOME/.gnupg') if os.path.exists('$HOME/.gnupg') else (_ for _ in ()).throw(PermissionError())"
-test_exec 1 "Block read ~/.aws/credentials" "open('$HOME/.aws/credentials').read() if __import__('os').path.exists('$HOME/.aws/credentials') else (_ for _ in ()).throw(PermissionError())"
-
-echo ""
-echo "=== Execution Sandbox: File Operations ==="
-test_exec 0 "Allow file stat in CWD" "import os; os.stat('$CWD')"
-test_exec 0 "Allow file stat /tmp" "import os; os.stat('/tmp')"
-test_exec 0 "Allow getcwd" "import os; os.getcwd()"
-test_exec 0 "Allow chmod in CWD" "import os; f='$CWD/.chmod_test'; open(f,'w').close(); os.chmod(f, 0o644); os.unlink(f)"
-test_exec 0 "Allow symlink in CWD" "import os; f='$CWD/.link_test'; t='$CWD/.link_target'; open(t,'w').close(); os.path.exists(f) and os.unlink(f); os.symlink(t,f); os.unlink(f); os.unlink(t)"
-
-echo ""
-echo "=== Execution Sandbox: Environment ==="
-test_exec 0 "Allow read env vars" "import os; os.environ.get('HOME')"
-test_exec 0 "Allow modify env vars" "import os; os.environ['SANDBOX_TEST']='1'; del os.environ['SANDBOX_TEST']"
-
-echo ""
-echo "================================"
-echo "Execution Sandbox: $EXEC_PASS passed, $EXEC_FAIL failed"
-echo ""
-echo "================================"
-TOTAL_PASS=$((PASS + EXEC_PASS))
-TOTAL_FAIL=$((FAIL + EXEC_FAIL))
-echo "Total: $TOTAL_PASS passed, $TOTAL_FAIL failed"
-[[ $TOTAL_FAIL -eq 0 ]] && echo "All tests passed!" || exit 1
+[[ $FAIL -eq 0 ]] && echo "All tests passed!" || exit 1

@@ -1,0 +1,56 @@
+;; Local compatibility and security overlay for agent-sandbox.
+
+;; Retain upstream Keychain reads for agent authentication while preventing
+;; modification of credential-store files.
+(deny file-write* file-write-create
+    (subpath (string-append (param "HOME_DIR") "/Library/Keychains"))
+)
+
+;; Upstream grants ~/.codex. Preserve the existing override for a custom
+;; CODEX_HOME as well.
+(allow file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (param "CODEX_HOME_DIR"))
+)
+
+;; Missing from upstream: Rust toolchain configuration.
+(allow file-read*
+    (subpath (string-append (param "HOME_DIR") "/.rustup"))
+)
+
+;; Missing from upstream: Xcode developer files.
+(allow file-read*
+    (subpath "/Library/Developer")
+    (subpath "/Applications/Xcode.app")
+    (subpath "/Applications/Xcode-beta.app")
+)
+
+;; Shared hook implementation used by Claude and Codex.
+(allow file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (string-append (param "HOME_DIR") "/.agent-hooks"))
+    ;; Missing from upstream: read/write Rust Cargo files.
+    (subpath (string-append (param "HOME_DIR") "/.cargo"))
+)
+
+;; Missing from upstream: POSIX IPC for multi-process execution (pytest-xdist,
+;; multiprocessing).
+(allow ipc-posix-shm)
+(allow ipc-posix-sem)
+
+;; Missing from upstream: Python's sysconf() for POSIX.1b values (for example,
+;; SC_SEM_NSEMS_MAX) uses numeric MIBs that sandbox-exec cannot match with a
+;; sysctl-name rule. This subsumes the upstream per-name allowlist.
+(allow sysctl-read)
+
+;; Missing from upstream: cache for managed Python installations by uv. It may
+;; be safe to reduce this to read-only access in the future.
+(allow file-read* file-write*
+    (subpath (string-append (param "HOME_DIR") "/.local/share/uv"))
+)
+
+;; Prevent sensitive-file reads, including inside the project directory.
+(deny file-read*
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.env(\\..*)?$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?[^/]*\\.(pem|key)$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?id_rsa[^/]*$"))
+    (regex (string-append "^" (param "TARGET_DIR") "/(.*/)?\\.(ssh|aws|gnupg)(/.*)?$"))
+)

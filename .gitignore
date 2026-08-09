@@ -1,2 +1,4 @@
 .DS_STORE
-
+.worktrees/
+PROJECT.md
+__pycache__/

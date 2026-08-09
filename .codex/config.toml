@@ -1,0 +1,17 @@
+# Global Codex defaults. My external macOS sandbox is the enforcement
+# boundary; these values preserve the interactive Codex experience.
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+analytics.enabled = false
+
+# Let Codex edit the workspace without automatic approval prompts. Explicit
+# `.codex/rules/default.rules` decisions still control command behavior.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "live"
+
+[sandbox_workspace_write]
+network_access = true
+
+# Continue to honor existing project-specific Claude instructions.
+project_doc_fallback_filenames = ["CLAUDE.md"]

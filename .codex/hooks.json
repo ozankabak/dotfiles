@@ -1,0 +1,17 @@
+{
+  "description": "Block shell commands that reference paths outside the workspace, /tmp, or Codex state.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.agent-hooks/path_check.py --agent codex",
+            "statusMessage": "Checking command paths"
+          }
+        ]
+      }
+    ]
+  }
+}
