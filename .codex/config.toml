@@ -15,4 +15,3 @@ network_access = true
 
 # Continue to honor existing project-specific Claude instructions.
 project_doc_fallback_filenames = ["CLAUDE.md"]
-
