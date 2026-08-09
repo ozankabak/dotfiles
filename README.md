@@ -78,15 +78,6 @@ I use `scripts/agent-sandbox` to limit Claude and Codex with read/write access t
 
 - This is macOS-specific, and Linux will require a different approach.
 - We do not rely on the agent's own sandbox: Claude disables its built-in sandbox, while Codex runs with `--sandbox danger-full-access`. The outer macOS sandbox remains the enforcing boundary because macOS does not support nesting `sandbox-exec` profiles.
-- There was a bug in the upstream `sandbox-exec` utility due to macOS's `realpath` not supporting the `-m` flag, so I changed the line
-  ```
-  TARGET_DIR="$(realpath -m "${TARGET_DIR}" 2>/dev/null)"
-  ```
-  to
-  ```
-  TARGET_DIR="$(cd "${TARGET_DIR}" 2>/dev/null && pwd -P || echo "${TARGET_DIR}")"
-  ```
-- I gave access to certain standard "files" (e.g., `/dev/stdin`) the upstream code doesn't. This is necessary for things like Python's `subprocess` module to work properly. Find these additions by searching for the comment `;; Missing from upstream`.
 
 ### Permissions/Access Model
 
