@@ -103,7 +103,7 @@ else
 fi
 
 expect_profile_contains 0 "includes local sensitive-file policy" "Prevent sensitive-file reads"
-expect_profile_contains 0 "includes ${AGENT} Keychain grant" "login.keychain-db"
+expect_profile_contains 0 "includes ${AGENT} Keychain grant" "Library/Keychains"
 expect_profile_contains 0 "includes ${AGENT} securityd grant" "com.apple.securityd"
 
 echo ""

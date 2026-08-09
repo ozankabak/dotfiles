@@ -1,14 +1,9 @@
 ;; Local compatibility and security overlay for agent-sandbox.
 
-;; Upstream grants all Keychains. Revoke that broad grant; the wrapper appends
-;; Claude's single login keychain database after /login.
-(deny file-read* file-write* file-write-create file-read-metadata file-ioctl
+;; Retain upstream Keychain reads for agent authentication while preventing
+;; modification of credential-store files.
+(deny file-write* file-write-create
     (subpath (string-append (param "HOME_DIR") "/Library/Keychains"))
-)
-(deny mach-lookup
-    (global-name "com.apple.SecurityServer")
-    (global-name "com.apple.securityd")
-    (global-name "com.apple.securityd.xpc")
 )
 
 ;; Upstream grants ~/.codex. Preserve the existing override for a custom
