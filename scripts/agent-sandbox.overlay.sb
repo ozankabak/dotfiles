@@ -17,6 +17,12 @@
     (subpath (string-append (param "HOME_DIR") "/.rustup"))
 )
 
+;; Missing from upstream: Permit existing Lean toolchains,
+;; but keep them read-only so agents cannot install or update toolchains.
+(allow file-read* file-write* file-write-create file-read-metadata file-ioctl
+    (subpath (string-append (param "HOME_DIR") "/.elan"))
+)
+
 ;; Missing from upstream: Xcode developer files.
 (allow file-read*
     (subpath "/Library/Developer")
