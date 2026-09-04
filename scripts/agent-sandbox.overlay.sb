@@ -1,5 +1,9 @@
 ;; Local compatibility and security overlay for agent-sandbox.
 
+;; Allow read-only access to CA bundles (public root certificates):
+(allow file-read*
+    (literal "/etc/ssl/cert.pem"))
+
 ;; Retain upstream Keychain reads for agent authentication while preventing
 ;; modification of credential-store files.
 (deny file-write* file-write-create
