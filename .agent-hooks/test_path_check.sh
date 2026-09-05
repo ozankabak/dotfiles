@@ -11,8 +11,11 @@ if [[ "$AGENT" != "claude" && "$AGENT" != "codex" ]]; then
     echo "Usage: $0 [--agent <claude|codex>]" >&2
     exit 1
 fi
-HOOK="${HOOK:-$HOME/.agent-hooks/path_check.py}"
-CWD="${CWD:-$PWD}"
+# Resolve both defaults from this script's own location, as
+# scripts/test-agent-sandbox.sh does. A checkout then tests itself rather than
+# whatever exists in $HOME, and the notional project root stays the same.
+HOOK="${HOOK:-$(cd "$(dirname "$0")" && pwd -P)/path_check.py}"
+CWD="${CWD:-$(cd "$(dirname "$0")/.." && pwd -P)}"
 # For env var expansion tests. Deliberately a variable the hook's policy knows
 # nothing about: $HOME and $TMPDIR are baked into its tables, so they cannot show
 # that expansion is generic rather than special-cased.
