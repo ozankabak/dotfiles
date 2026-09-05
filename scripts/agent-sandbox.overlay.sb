@@ -2,7 +2,17 @@
 
 ;; Allow read-only access to CA bundles (public root certificates):
 (allow file-read*
-    (literal "/etc/ssl/cert.pem"))
+    (literal "/etc/ssl/cert.pem")
+)
+
+;; Allow access to Lima cache and macOS virtualization framework to run
+;; local VMs.
+(allow file-read* file-write*
+    (subpath (string-append (param "HOME_DIR") "/Library/Caches/lima"))
+)
+(allow mach-lookup
+    (global-name "com.apple.Virtualization.VirtualMachine"))
+(allow mach-task-name)
 
 ;; Retain upstream Keychain reads for agent authentication while preventing
 ;; modification of credential-store files.
@@ -55,6 +65,21 @@
 ;; be safe to reduce this to read-only access in the future.
 (allow file-read* file-write*
     (subpath (string-append (param "HOME_DIR") "/.local/share/uv"))
+)
+
+;; Missing from upstream: credential and identity stores under the system paths
+;; the profile otherwise grants. No agent tooling reads these.
+(deny file-read*
+    (literal "/etc/sudoers")
+    (subpath "/etc/sudoers.d")
+    (literal "/etc/master.passwd")
+    (literal "/etc/krb5.keytab")
+    (subpath "/etc/ssh")
+    (subpath "/etc/ssl/private")
+    ;; List both spellings of the /var symlink, as upstream does for its
+    ;; own /var rules:
+    (subpath "/var/db/dslocal")
+    (subpath "/private/var/db/dslocal")
 )
 
 ;; Prevent sensitive-file reads, including inside the project directory.

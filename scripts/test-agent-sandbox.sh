@@ -102,6 +102,11 @@ else
     ((FAIL++))
 fi
 
+expect_status 0 "hook policy and sandbox profile agree" \
+    python3 "$ROOT/scripts/check-policy-sync.py" --profile "$PROFILE_FILE" \
+    --target-dir "$TEST_DIR" --hook "$ROOT/.agent-hooks/path_check.py"
+sed 's/^/  /' "$OUTPUT_FILE"
+
 expect_profile_contains 0 "includes local sensitive-file policy" "Prevent sensitive-file reads"
 expect_profile_contains 0 "includes ${AGENT} Keychain grant" "Library/Keychains"
 expect_profile_contains 0 "includes ${AGENT} securityd grant" "com.apple.securityd"
@@ -176,6 +181,20 @@ expect_status 1 "deny ~/.gnupg listing" run_sandbox \
     'from pathlib import Path; path = Path.home() / ".gnupg"; list(path.iterdir()) if path.exists() else (_ for _ in ()).throw(PermissionError())'
 expect_status 1 "deny ~/.aws/credentials read" run_sandbox \
     'from pathlib import Path; path = Path.home() / ".aws/credentials"; path.read_text() if path.exists() else (_ for _ in ()).throw(PermissionError())'
+
+echo ""
+echo "=== System Credential Stores ==="
+# Only paths that are user-readable without the deny rules are asserted here.
+# /etc/sudoers, /etc/master.passwd and /etc/krb5.keytab are root-only anyway, so
+# testing them would pass on file permissions rather than on the sandbox policy.
+expect_status 1 "deny /etc/ssh read" run_sandbox \
+    'from pathlib import Path; Path("/etc/ssh/ssh_config").read_text()'
+expect_status 1 "deny /etc/sudoers.d listing" run_sandbox \
+    'from pathlib import Path; list(Path("/etc/sudoers.d").iterdir())'
+expect_status 1 "deny directory services listing" run_sandbox \
+    'from pathlib import Path; list(Path("/private/var/db/dslocal").iterdir())'
+expect_status 0 "allow CA bundle read" run_sandbox \
+    'from pathlib import Path; Path("/etc/ssl/cert.pem").read_text()'
 
 echo ""
 echo "=== Runtime Compatibility ==="

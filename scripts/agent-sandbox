@@ -154,13 +154,6 @@ case "${AGENT:-auto}" in
     *) printf 'Error: Unsupported agent %q; expected claude or codex.\n' "${AGENT:-}" >&2; exit 1 ;;
 esac
 
-# Detect if already running inside a sandbox (nested sandboxing is not supported on macOS)
-if sandbox-exec -p '(version 1)(allow default)' true 2>/dev/null; [ $? -eq 71 ]; then
-    echo "Error: Already running inside a sandbox. Nested sandboxing is not supported on macOS." >&2
-    echo "If you're running inside agent-sandbox, you cannot nest another sandbox." >&2
-    exit 1
-fi
-
 # If --write-base-profile is set, dump the built-in profile and exit
 if [[ -n "${WRITE_BASE_PROFILE:-}" ]]; then
     cat "${BASE_PROFILE_FILE}" > "${WRITE_BASE_PROFILE}"
@@ -215,6 +208,16 @@ fi
 if [[ -n "${WRITE_PROFILE:-}" ]]; then
     echo "${FULL_PROFILE}" > "${WRITE_PROFILE}"
     exit 0
+fi
+
+# Detect if already running inside a sandbox (macOS does not support nesting
+# sandboxes). Note that we check this after --write-*-profile paths above, as
+# they are pure text generation and must stay usable from inside a sandbox,
+# where the policy sync check runs.
+if sandbox-exec -p '(version 1)(allow default)' true 2>/dev/null; [ $? -eq 71 ]; then
+    echo "Error: Already running inside a sandbox. Nested sandboxing is not supported on macOS." >&2
+    echo "If you're running inside agent-sandbox, you cannot nest another sandbox." >&2
+    exit 1
 fi
 
 # Write to a temporary file for sandbox-exec.
