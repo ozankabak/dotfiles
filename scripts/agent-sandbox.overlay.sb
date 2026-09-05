@@ -1,8 +1,10 @@
 ;; Local compatibility and security overlay for agent-sandbox.
 
-;; Allow read-only access to CA bundles (public root certificates):
+;; Allow read-only access to CA bundles (public root certificates). Both
+;; spellings of the /etc symlink, since the kernel matches the canonical path:
 (allow file-read*
     (literal "/etc/ssl/cert.pem")
+    (literal "/private/etc/ssl/cert.pem")
 )
 
 ;; Allow access to Lima cache and macOS virtualization framework to run
@@ -69,15 +71,22 @@
 
 ;; Missing from upstream: credential and identity stores under the system paths
 ;; the profile otherwise grants. No agent tooling reads these.
+;; List both spellings of the /etc and /var symlinks, as upstream does for its
+;; own rules: the kernel matches the canonical path, so an /etc rule alone never
+;; fires.
 (deny file-read*
     (literal "/etc/sudoers")
+    (literal "/private/etc/sudoers")
     (subpath "/etc/sudoers.d")
+    (subpath "/private/etc/sudoers.d")
     (literal "/etc/master.passwd")
+    (literal "/private/etc/master.passwd")
     (literal "/etc/krb5.keytab")
+    (literal "/private/etc/krb5.keytab")
     (subpath "/etc/ssh")
+    (subpath "/private/etc/ssh")
     (subpath "/etc/ssl/private")
-    ;; List both spellings of the /var symlink, as upstream does for its
-    ;; own /var rules:
+    (subpath "/private/etc/ssl/private")
     (subpath "/var/db/dslocal")
     (subpath "/private/var/db/dslocal")
 )

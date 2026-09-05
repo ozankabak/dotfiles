@@ -275,7 +275,11 @@ def refuses_read(rules: list[Grant], path: Path) -> bool:
     refuse = False
     for grant in rules:
         if grant.access == "read" and grant.kind != "regex":
-            term = Path(grant.path).resolve()
+            # Match the term as written. The kernel canonicalizes the path
+            # and compares it against this literal text, so a rule naming /etc
+            # never fires for the /private/etc the kernel actually sees.
+            # Resolving here would hide exactly that mistake.
+            term = Path(grant.path)
             if grant.kind == "subpath":
                 matches = path.is_relative_to(term)
             else:
