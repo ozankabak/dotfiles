@@ -78,7 +78,7 @@ fi
 # Use strict sandboxing for coding agents. Codex delegates filesystem confinement
 # to agent-sandbox; its approval rules remain active.
 alias claude='env -u ANTHROPIC_API_KEY agent-sandbox --agent claude -- claude'
-alias codex='agent-sandbox --agent codex -- codex --sandbox danger-full-access'
+alias codex='agent-sandbox --agent codex -- codex --no-daemon --sandbox danger-full-access'
 
 # Use iTerm2 shell integration if it exists:
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
