@@ -108,7 +108,7 @@ expect_status 0 "hook policy and sandbox profile agree" \
 sed 's/^/  /' "$OUTPUT_FILE"
 
 expect_profile_contains 0 "includes local sensitive-file policy" "Prevent sensitive-file reads"
-expect_profile_contains 0 "includes unsandboxed ps exception" "(allow process-exec* (with no-sandbox)"
+expect_profile_contains 1 "omits unsandboxed ps exception" "(allow process-exec* (with no-sandbox)"
 expect_profile_contains 0 "includes ${AGENT} Keychain grant" "Library/Keychains"
 expect_profile_contains 0 "includes ${AGENT} securityd grant" "com.apple.securityd"
 
@@ -210,7 +210,7 @@ expect_status 0 "allow standard output and error" run_sandbox \
 expect_status 0 "allow subprocess execution" run_sandbox \
     'import subprocess; import sys; subprocess.run(["ls", "-la", sys.argv[1]], capture_output=True, timeout=5, check=True); subprocess.run(["cat", "/etc/hosts"], capture_output=True, timeout=5, check=True)' \
     "$TEST_DIR"
-expect_status 0 "allow Codex daemon process inspection" run_sandbox \
+expect_status 1 "deny setuid ps execution" run_sandbox \
     'import subprocess; subprocess.run(["ps", "-p", "1", "-o", "stat=", "-o", "lstart="], capture_output=True, timeout=5, check=True)'
 expect_status 0 "allow multiprocessing primitives" run_sandbox \
     'from multiprocessing import Semaphore, shared_memory; semaphore = Semaphore(); shared = shared_memory.SharedMemory(create=True, size=1); shared.close(); shared.unlink()'
