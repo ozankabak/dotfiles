@@ -1,5 +1,12 @@
 ;; Local compatibility and security overlay for agent-sandbox.
 
+;; Codex uses an app server that runs outside the invoking sandbox. Codex
+;; verifies its PID with the setuid macOS /bin/ps, which macOS will not execute
+;; inside sandbox-exec. Thus, we provide an exception for this system utility:
+;; only ps runs without the sandbox; every other child remains inside.
+(allow process-exec* (with no-sandbox)
+    (literal "/bin/ps"))
+
 ;; Allow read-only access to CA bundles (public root certificates). Both
 ;; spellings of the /etc symlink, since the kernel matches the canonical path:
 (allow file-read*
